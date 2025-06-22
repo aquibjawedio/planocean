@@ -17,5 +17,9 @@ export const registerUserController = asyncHandler(async (req, res) => {
 export const loginUserController = asyncHandler(async (req, res) => {
   const { email, password } = loginUserSchema.parse(req.body);
 
-  const user = await loginUserService(username, email, password);
+  const user = await loginUserService(email, password);
+
+  return res
+    .status(HTTP_STATUS.OK)
+    .json(new ApiResponse(HTTP_STATUS.OK, "User loggedin successfully", user));
 });

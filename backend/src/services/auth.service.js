@@ -29,4 +29,16 @@ export const registerUserService = async (fullname, username, email, password) =
   return sanitizeUser(user);
 };
 
-export const loginUserService = async (username, email, password) => {};
+export const loginUserService = async (email, password) => {
+  const user = await User.findOne({ email });
+  if (!user) {
+    throw new ApiError(HTTP_STATUS.NOT_FOUND, "Invalid credentials!");
+  }
+
+  const isPasswordMatched = await user.isPasswordCorrect(password);
+  if (!isPasswordMatched) {
+    throw new ApiError(HTTP_STATUS.BAD_REQUEST, "Invalid credentials!");
+  }
+
+  return sanitizeUser(user);
+};

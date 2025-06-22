@@ -7,5 +7,5 @@ dotenv.config();
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
-  console.log(`Server is running at ${process.env.FRONTEND_URL}`);
+  console.log(`Server is running at ${process.env.FRONTEND_URL}/api/v1/healthcheck`);
 });
