@@ -3,6 +3,7 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { HTTP_STATUS } from "../constants/httpStatusCodes.js";
 import { loginUserService, registerUserService } from "../services/auth.service.js";
+import { ApiError } from "../utils/ApiError.js";
 
 export const registerUserController = asyncHandler(async (req, res) => {
   const { fullname, username, email, password } = registerUserSchema.parse(req.body);
@@ -15,11 +16,31 @@ export const registerUserController = asyncHandler(async (req, res) => {
 });
 
 export const loginUserController = asyncHandler(async (req, res) => {
+  if (req.cookies?.refreshToken) {
+    console.log(req.cookies?.refreshToken);
+    throw new ApiError(HTTP_STATUS.BAD_REQUEST, "User is already loggedin");
+  }
   const { email, password } = loginUserSchema.parse(req.body);
 
-  const user = await loginUserService(email, password);
+  const { user, accessToken, refreshToken } = await loginUserService(email, password);
+  const cookieOptions = {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    samesite: process.env.NODE_ENV === "production" ? "none" : "lax",
+    maxAge: 1000 * 60 * 60 * 24 * 7,
+  };
+
+  res.cookie("refreshToken", refreshToken, cookieOptions);
 
   return res
     .status(HTTP_STATUS.OK)
-    .json(new ApiResponse(HTTP_STATUS.OK, "User loggedin successfully", user));
+    .json(new ApiResponse(HTTP_STATUS.OK, "User loggedin successfully", { user, accessToken }));
 });
+
+export const verifyUserEmailController = asyncHandler(async (req, res) => {});
+
+export const resendVerificationURLController = asyncHandler(async (req, res) => {});
+
+export const refreshAccessTokenController = asyncHandler(async (req, res) => {});
+
+export const getCurrentUserController = asyncHandler(async (req, res) => {});

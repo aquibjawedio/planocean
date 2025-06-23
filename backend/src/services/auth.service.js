@@ -25,7 +25,13 @@ export const registerUserService = async (fullname, username, email, password) =
     mailGenContent: emailVerificationMailGenContent(fullname, verificationUrl),
   });
 
-  const user = await User.create({ fullname, username, email, password });
+  const user = await User.create({
+    fullname,
+    username,
+    email,
+    password,
+    emailVerificationToken: verificationToken,
+  });
   return sanitizeUser(user);
 };
 
@@ -40,5 +46,11 @@ export const loginUserService = async (email, password) => {
     throw new ApiError(HTTP_STATUS.BAD_REQUEST, "Invalid credentials!");
   }
 
-  return sanitizeUser(user);
+  const refreshToken = user.generateRefreshToken();
+  const accessToken = user.generateAccessToken();
+
+  user.refreshToken = refreshToken;
+  await user.save();
+
+  return { user, accessToken, refreshToken };
 };
