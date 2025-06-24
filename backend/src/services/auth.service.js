@@ -67,3 +67,17 @@ export const loginUserService = async (email, password) => {
 
   return { user, accessToken, refreshToken };
 };
+
+export const verifyUserEmailService = async (token) => {
+  const user = await User.findOne({ emailVerificationToken: token });
+
+  if (!user) {
+    throw new ApiError(HTTP_STATUS.NOT_FOUND, "Invalid or expired token.");
+  }
+
+  user.isEmailVerified = true;
+  user.emailVerificationToken = undefined;
+  await user.save();
+
+  return { user: sanitizeUser(user), verified: user.isEmailVerified };
+};

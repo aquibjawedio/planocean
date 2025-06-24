@@ -1,8 +1,16 @@
-import { loginUserSchema, registerUserSchema } from "../schemas/auth.schema.js";
+import {
+  loginUserSchema,
+  registerUserSchema,
+  verifyUserEmailSchema,
+} from "../schemas/auth.schema.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { HTTP_STATUS } from "../constants/httpStatusCodes.js";
-import { loginUserService, registerUserService } from "../services/auth.service.js";
+import {
+  loginUserService,
+  registerUserService,
+  verifyUserEmailService,
+} from "../services/auth.service.js";
 import { ApiError } from "../utils/ApiError.js";
 
 export const registerUserController = asyncHandler(async (req, res) => {
@@ -54,7 +62,17 @@ export const logoutUserController = asyncHandler(async (req, res) => {
 });
 
 export const verifyUserEmailController = asyncHandler(async (req, res) => {
-  
+  const { token } = verifyUserEmailSchema.parse({ token: req.params?.token });
+
+  if (!token) {
+    throw new ApiError(HTTP_STATUS.NOT_FOUND, "Token not found");
+  }
+  const { user, verified } = await verifyUserEmailService(token);
+  res
+    .status(HTTP_STATUS.OK)
+    .json(
+      new ApiResponse(HTTP_STATUS.OK, "User email verification successfull", { user, verified })
+    );
 });
 
 export const resendVerificationURLController = asyncHandler(async (req, res) => {});
