@@ -37,13 +37,26 @@ export const registerUserService = async (fullname, username, email, password) =
 
 export const loginUserService = async (email, password) => {
   const user = await User.findOne({ email });
+
+  if (!user.isEmailVerified) {
+    throw new ApiError(
+      HTTP_STATUS.BAD_REQUEST,
+      "Email is not verified. Verification link has been sent on your email."
+    );
+  }
   if (!user) {
-    throw new ApiError(HTTP_STATUS.NOT_FOUND, "Invalid credentials!");
+    throw new ApiError(
+      HTTP_STATUS.NOT_FOUND,
+      "Invalid credentials!. Please enter valid credentials."
+    );
   }
 
   const isPasswordMatched = await user.isPasswordCorrect(password);
   if (!isPasswordMatched) {
-    throw new ApiError(HTTP_STATUS.BAD_REQUEST, "Invalid credentials!");
+    throw new ApiError(
+      HTTP_STATUS.BAD_REQUEST,
+      "Invalid credentials!. Please enter valid credentials."
+    );
   }
 
   const refreshToken = user.generateRefreshToken();

@@ -37,7 +37,25 @@ export const loginUserController = asyncHandler(async (req, res) => {
     .json(new ApiResponse(HTTP_STATUS.OK, "User loggedin successfully", { user, accessToken }));
 });
 
-export const verifyUserEmailController = asyncHandler(async (req, res) => {});
+export const logoutUserController = asyncHandler(async (req, res) => {
+  const token = req.cookies?.refreshToken;
+  if (!token) {
+    throw new ApiError(HTTP_STATUS.BAD_REQUEST, "User is already logged out");
+  }
+
+  res.clearCookie("refreshToken", {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    samesite: process.env.NODE_ENV === "production" ? "none" : "lax",
+    maxAge: 1000 * 60 * 60 * 24 * 7,
+  });
+
+  res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, "User logged out successfully"));
+});
+
+export const verifyUserEmailController = asyncHandler(async (req, res) => {
+  
+});
 
 export const resendVerificationURLController = asyncHandler(async (req, res) => {});
 
