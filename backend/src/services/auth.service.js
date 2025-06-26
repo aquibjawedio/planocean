@@ -22,8 +22,10 @@ export const registerUserService = async (fullname, username, email, password) =
     throw new ApiError(HTTP_STATUS.CONFLICT, "User already exists with this username");
   }
 
-  const verificationToken = crypto.randomBytes(32).toString("hex");
-  const verificationUrl = `${process.env.BACKEND_URL}/api/v1/auth/verify-email/${verificationToken}`;
+  const unHashedToken = crypto.randomBytes(32).toString("hex");
+  const hashedToken = crypto.createHash("sha256").update(unHashedToken).digest("hex");
+
+  const verificationUrl = `${process.env.FRONTEND_URL}/api/v1/auth/verify-email/${unHashedToken}`;
 
   await sendEmail({
     email,
@@ -36,7 +38,7 @@ export const registerUserService = async (fullname, username, email, password) =
     username,
     email,
     password,
-    emailVerificationToken: verificationToken,
+    emailVerificationToken: hashedToken,
   });
   return sanitizeUser(user);
 };
@@ -75,7 +77,9 @@ export const loginUserService = async (email, password) => {
 };
 
 export const verifyUserEmailService = async (token) => {
-  const user = await User.findOne({ emailVerificationToken: token });
+  const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
+
+  const user = await User.findOne({ emailVerificationToken: hashedToken });
 
   if (!user) {
     throw new ApiError(HTTP_STATUS.NOT_FOUND, "Invalid or expired token.");
@@ -98,17 +102,18 @@ export const resendVerificationURLService = async (email) => {
     throw new ApiError(HTTP_STATUS.BAD_REQUEST, "user is already verified");
   }
 
-  const verificationToken = crypto.randomBytes(32).toString("hex");
-  const verificationUrl = `${process.env.BACKEND_URL}/api/v1/auth/verify-email/${verificationToken}`;
+  const { unHashedToken, hashedToken, tokenExpiry } = await user.generateTemporaryToken();
+
+  const verificationUrl = `${process.env.FRONTEND_URL}/api/v1/auth/verify-email/${unHashedToken}`;
+
+  user.emailVerificationToken = hashedToken;
+  await user.save();
 
   await sendEmail({
     email,
     subject: "Email Verification",
     mailGenContent: emailVerificationMailGenContent(user.fullname, verificationUrl),
   });
-
-  user.emailVerificationToken = verificationToken;
-  await user.save();
 
   return sanitizeUser(user);
 };
@@ -144,10 +149,13 @@ export const forgotPasswordService = async (email) => {
   if (!user) {
     throw new ApiError(HTTP_STATUS.NOT_FOUND, "User not found with this email");
   }
+  const { unHashedToken, hashedToken, tokenExpiry } = await user.generateTemporaryToken();
 
-  const passwordToken = crypto.randomBytes(23).toString("hex");
+  user.forgotPasswordToken = hashedToken;
+  user.forgotPasswordExpiry = tokenExpiry;
+  await user.save();
 
-  const forgotPasswordUrl = `${process.env.BACKEND_URL}/api/v1/auth/change-password/${passwordToken}`;
+  const forgotPasswordUrl = `${process.env.FRONTEND_URL}/api/v1/auth/reset-password/${unHashedToken}`;
 
   sendEmail({
     email,
@@ -155,9 +163,51 @@ export const forgotPasswordService = async (email) => {
     mailGenContent: forgotPasswordMailGenContent(user.fullname, forgotPasswordUrl),
   });
 
-  user.forgotPasswordToken = passwordToken;
-  user.forgotPasswordExpiry = new Date(Date.now() + 1000 * 60 * 10);
+  return {
+    user: sanitizeUser(user),
+    urlWillExpire: user.forgotPasswordExpiry,
+  };
+};
+
+export const resetPasswordService = async ({ token, newPassword, confirmNewPassword }) => {
+  if (newPassword !== confirmNewPassword) {
+    throw new ApiError(
+      HTTP_STATUS.BAD_REQUEST,
+      "New password and confirm new password must be same"
+    );
+  }
+
+  const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
+
+  console.log("token : ", hashedToken);
+
+  const user = await User.findOne({ forgotPasswordToken: hashedToken });
+  console.log("user : ", user);
+  if (!user) {
+    throw new ApiError(HTTP_STATUS.NOT_FOUND, "Invalid token! user not found");
+  }
+
+  if (Date.now() > user.forgotPasswordExpiry) {
+    throw new ApiError(HTTP_STATUS.BAD_REQUEST, "Token Expired! Please requrest for new reset url");
+  }
+
+  user.password = newPassword;
+  user.forgotPasswordToken = null;
+  user.forgotPasswordExpiry = Date.now();
   await user.save();
 
-  return { user: sanitizeUser(user), urlWillExpire: user.forgotPasswordExpiry };
+  return { user, resetStatus: true };
+};
+
+export const updateUsernameService = async (username, userId) => {
+  const user = await User.findById(userId);
+
+  if (!user) {
+    throw new ApiError(HTTP_STATUS.NOT_FOUND, "User not found! Please login first");
+  }
+
+  user.username = username;
+  await user.save();
+
+  return { user: sanitizeUser(user), updateStatus: true };
 };

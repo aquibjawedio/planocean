@@ -23,3 +23,13 @@ export const resendVerificationURLSchema = z.object({
 export const forgotPasswordSchema = z.object({
   email: z.string().email("valid email is required"),
 });
+
+export const resetPasswordSchema = z.object({
+  token: z.string().min(1, "Token is required"),
+  newPassword: z.string().min(8, "password must be of 8 characters"),
+  confirmNewPassword: z.string().min(8, "password must be of 8 characters"),
+});
+
+export const updateUsernameSchema = z.object({
+  username: z.string().min(3, { message: "Username must be at least 3 characters long." }),
+});

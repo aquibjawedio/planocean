@@ -3,6 +3,8 @@ import {
   loginUserSchema,
   registerUserSchema,
   resendVerificationURLSchema,
+  resetPasswordSchema,
+  updateUsernameSchema,
   verifyUserEmailSchema,
 } from "../schemas/auth.schema.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
@@ -14,6 +16,8 @@ import {
   refreshAccessTokenService,
   registerUserService,
   resendVerificationURLService,
+  resetPasswordService,
+  updateUsernameService,
   verifyUserEmailService,
 } from "../services/auth.service.js";
 import { ApiError } from "../utils/ApiError.js";
@@ -156,16 +160,47 @@ export const forgotPasswordController = asyncHandler(async (req, res) => {
 
   const { user, urlWillExpire } = await forgotPasswordService(email);
 
-  return res
-    .status(HTTP_STATUS.OK)
-    .json(
-      new ApiResponse(HTTP_STATUS.OK, "Link sent on your email to reset your new password", {
-        user,
-        urlWillExpire,
-      })
-    );
+  return res.status(HTTP_STATUS.OK).json(
+    new ApiResponse(HTTP_STATUS.OK, "Link sent on your email to reset your new password", {
+      user,
+      urlWillExpire,
+    })
+  );
 });
 
-export const changePasswordController = asyncHandler(async (req, res) => {});
+export const resetPasswordController = asyncHandler(async (req, res) => {
+  const { token, newPassword, confirmNewPassword } = resetPasswordSchema.parse({
+    ...req.body,
+    token: req.params?.token,
+  });
 
-export const changeUsernameController = asyncHandler(async (req, res) => {});
+  const { user, resetStatus } = await resetPasswordService({
+    token,
+    newPassword,
+    confirmNewPassword,
+  });
+
+  return res.status(HTTP_STATUS.OK).json(
+    new ApiResponse(HTTP_STATUS.OK, "User password reset successfull", {
+      user,
+      resetStatus,
+    })
+  );
+});
+
+export const updateUsernameController = asyncHandler(async (req, res) => {
+  const { username } = updateUsernameSchema.parse(req.body);
+
+  if (username === req.user.username) {
+    throw new ApiError(
+      HTTP_STATUS.CONFLICT,
+      "Updated username is same as current username. Please select different username to update"
+    );
+  }
+  const { user, updateStatus } = await updateUsernameService(username, req.user._id);
+  return res
+    .status(HTTP_STATUS.CREATED)
+    .json(
+      new ApiResponse(HTTP_STATUS.CREATED, "username updated successfully", { user, updateStatus })
+    );
+});
