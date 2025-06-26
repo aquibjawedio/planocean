@@ -81,3 +81,28 @@ export const verifyUserEmailService = async (token) => {
 
   return { user: sanitizeUser(user), verified: user.isEmailVerified };
 };
+
+export const resendVerificationURLService = async (email) => {
+  const user = await User.findOne({ email });
+  if (!user) {
+    throw new ApiError(HTTP_STATUS.NOT_FOUND, "user not found with this email");
+  }
+
+  if (user.isEmailVerified) {
+    throw new ApiError(HTTP_STATUS.BAD_REQUEST, "user is already verified");
+  }
+
+  const verificationToken = crypto.randomBytes(32).toString("hex");
+  const verificationUrl = `${process.env.BACKEND_URL}/api/v1/auth/verify-email/${verificationToken}`;
+
+  await sendEmail({
+    email,
+    subject: "Email Verification",
+    mailGenContent: emailVerificationMailGenContent(user.fullname, verificationUrl),
+  });
+
+  user.emailVerificationToken = verificationToken;
+  await user.save();
+
+  return sanitizeUser(user);
+};

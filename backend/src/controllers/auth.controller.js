@@ -1,6 +1,7 @@
 import {
   loginUserSchema,
   registerUserSchema,
+  resendVerificationURLSchema,
   verifyUserEmailSchema,
 } from "../schemas/auth.schema.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
@@ -9,6 +10,7 @@ import { HTTP_STATUS } from "../constants/httpStatusCodes.js";
 import {
   loginUserService,
   registerUserService,
+  resendVerificationURLService,
   verifyUserEmailService,
 } from "../services/auth.service.js";
 import { ApiError } from "../utils/ApiError.js";
@@ -31,14 +33,22 @@ export const loginUserController = asyncHandler(async (req, res) => {
   const { email, password } = loginUserSchema.parse(req.body);
 
   const { user, accessToken, refreshToken } = await loginUserService(email, password);
-  const cookieOptions = {
+
+  const refreshCookieOptions = {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     samesite: process.env.NODE_ENV === "production" ? "none" : "lax",
     maxAge: 1000 * 60 * 60 * 24 * 7,
   };
+  const accessCookieOptions = {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    samesite: process.env.NODE_ENV === "production" ? "none" : "lax",
+    maxAge: 1000 * 60 * 15,
+  };
 
-  res.cookie("refreshToken", refreshToken, cookieOptions);
+  res.cookie("refreshToken", refreshToken, refreshCookieOptions);
+  res.cookie("accessToken", accessToken, accessCookieOptions);
 
   return res
     .status(HTTP_STATUS.OK)
@@ -52,6 +62,13 @@ export const logoutUserController = asyncHandler(async (req, res) => {
   }
 
   res.clearCookie("refreshToken", {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    samesite: process.env.NODE_ENV === "production" ? "none" : "lax",
+    maxAge: 1000 * 60 * 60 * 24 * 7,
+  });
+
+  res.clearCookie("accessToken", {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     samesite: process.env.NODE_ENV === "production" ? "none" : "lax",
@@ -75,8 +92,23 @@ export const verifyUserEmailController = asyncHandler(async (req, res) => {
     );
 });
 
-export const resendVerificationURLController = asyncHandler(async (req, res) => {});
+export const resendVerificationURLController = asyncHandler(async (req, res) => {
+  const { email } = resendVerificationURLSchema.parse(req.body);
+
+  const user = await resendVerificationURLService(email);
+
+  return res.status(HTTP_STATUS.OK).json(
+    new ApiResponse(HTTP_STATUS.OK, "Email resend successfully. Please check spam folder", {
+      user,
+    })
+  );
+});
 
 export const refreshAccessTokenController = asyncHandler(async (req, res) => {});
 
-export const getCurrentUserController = asyncHandler(async (req, res) => {});
+export const getCurrentUserController = asyncHandler(async (req, res) => {
+  console.log("Current User : ", req.user);
+  return res
+    .status(HTTP_STATUS.OK)
+    .json(new ApiResponse(HTTP_STATUS.OK, "current user data fetched successfully", req.user));
+});
