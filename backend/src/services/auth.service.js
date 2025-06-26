@@ -1,5 +1,7 @@
 import crypto from "crypto";
+import jwt from "jsonwebtoken";
 
+// Imports from folders
 import { User } from "../models/user.model.js";
 import { ApiError } from "../utils/ApiError.js";
 import { HTTP_STATUS } from "../constants/httpStatusCodes.js";
@@ -105,4 +107,29 @@ export const resendVerificationURLService = async (email) => {
   await user.save();
 
   return sanitizeUser(user);
+};
+
+export const refreshAccessTokenService = async (refreshToken) => {
+  let decodedData;
+  try {
+    decodedData = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
+  } catch (error) {
+    throw new ApiError(
+      HTTP_STATUS.UNAUTHORIZED,
+      error.message || "Invalid or expired refresh token"
+    );
+  }
+
+  const user = await User.findById(decodedData._id);
+  if (!user) {
+    throw new ApiError(HTTP_STATUS.NOT_FOUND, "User not found! Invalid refresh token");
+  }
+
+  const newAccessToken = user.generateAccessToken();
+  const newRefreshToken = user.generateRefreshToken();
+
+  user.refreshToken = newRefreshToken;
+  await user.save();
+
+  return { user, newAccessToken, newRefreshToken };
 };

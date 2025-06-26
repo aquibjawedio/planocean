@@ -9,11 +9,13 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 import { HTTP_STATUS } from "../constants/httpStatusCodes.js";
 import {
   loginUserService,
+  refreshAccessTokenService,
   registerUserService,
   resendVerificationURLService,
   verifyUserEmailService,
 } from "../services/auth.service.js";
 import { ApiError } from "../utils/ApiError.js";
+import { sanitizeUser } from "../utils/sanitizeUser.js";
 
 export const registerUserController = asyncHandler(async (req, res) => {
   const { fullname, username, email, password } = registerUserSchema.parse(req.body);
@@ -104,11 +106,47 @@ export const resendVerificationURLController = asyncHandler(async (req, res) => 
   );
 });
 
-export const refreshAccessTokenController = asyncHandler(async (req, res) => {});
+export const refreshAccessTokenController = asyncHandler(async (req, res) => {
+  const refreshToken = req.cookies?.refreshToken || req.body.refreshToken;
+  if (!refreshToken) {
+    throw new ApiError(HTTP_STATUS.UNAUTHORIZED, "Unauthorized! Refresh token is missing");
+  }
+
+  const { user, newAccessToken, newRefreshToken } = await refreshAccessTokenService(refreshToken);
+
+  if (!user) {
+    throw new ApiError(HTTP_STATUS.UNAUTHORIZED, "User not found");
+  }
+
+  res.cookie("accessToken", newAccessToken, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    samesite: process.env.NODE_ENV === "production" ? "none" : "lax",
+    maxAge: 1000 * 60 * 15,
+  });
+
+  res.cookie("refreshToken", newRefreshToken, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+    maxAge: 1000 * 60 * 60 * 24 * 7,
+  });
+
+  res
+    .status(HTTP_STATUS.OK)
+    .json(
+      new ApiResponse(HTTP_STATUS.OK, "Access token refresh successfully", {
+        accessToken: newAccessToken,
+      })
+    );
+});
 
 export const getCurrentUserController = asyncHandler(async (req, res) => {
-  console.log("Current User : ", req.user);
+  const user = req.user;
+  if (!user) {
+    throw new ApiError(HTTP_STATUS.BAD_REQUEST, "User not found! please login first");
+  }
   return res
     .status(HTTP_STATUS.OK)
-    .json(new ApiResponse(HTTP_STATUS.OK, "current user data fetched successfully", req.user));
+    .json(new ApiResponse(HTTP_STATUS.OK, "Current user data fetched successfully", { user }));
 });

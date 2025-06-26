@@ -3,6 +3,7 @@ import {
   getCurrentUserController,
   loginUserController,
   logoutUserController,
+  refreshAccessTokenController,
   registerUserController,
   resendVerificationURLController,
   verifyUserEmailController,
@@ -17,5 +18,6 @@ authRouter.route("/logout").post(isLoggedIn, logoutUserController);
 authRouter.route("/verify-email/:token").get(verifyUserEmailController);
 authRouter.route("/resend-email").post(resendVerificationURLController);
 authRouter.route("/me").get(isLoggedIn, getCurrentUserController);
+authRouter.route("/refresh-access-token").post(refreshAccessTokenController);
 
 export { authRouter };
