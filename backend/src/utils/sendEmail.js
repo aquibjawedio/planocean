@@ -74,3 +74,20 @@ export const emailVerificationMailGenContent = (fullname, verificationUrl) => ({
     outro: "Ignore! if you haven't created the account.",
   },
 });
+
+export const forgotPasswordMailGenContent = (fullname, forgotPasswordUrl) => ({
+  body: {
+    name: fullname,
+    intro: "You recently requested to reset your password for your PlanOcean account.",
+    action: {
+      instructions: "Click the button below to reset your password:",
+      button: {
+        color: "#22BC66",
+        text: "Reset Password",
+        link: forgotPasswordUrl,
+      },
+    },
+    outro:
+      "If you did not request a password reset, no further action is required. This link will expire shortly for your security.",
+  },
+});

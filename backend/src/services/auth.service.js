@@ -6,7 +6,11 @@ import { User } from "../models/user.model.js";
 import { ApiError } from "../utils/ApiError.js";
 import { HTTP_STATUS } from "../constants/httpStatusCodes.js";
 import { sanitizeUser } from "../utils/sanitizeUser.js";
-import { sendEmail, emailVerificationMailGenContent } from "../utils/sendEmail.js";
+import {
+  sendEmail,
+  emailVerificationMailGenContent,
+  forgotPasswordMailGenContent,
+} from "../utils/sendEmail.js";
 
 export const registerUserService = async (fullname, username, email, password) => {
   const existingEmail = await User.findOne({ email });
@@ -132,4 +136,28 @@ export const refreshAccessTokenService = async (refreshToken) => {
   await user.save();
 
   return { user, newAccessToken, newRefreshToken };
+};
+
+export const forgotPasswordService = async (email) => {
+  const user = await User.findOne({ email });
+
+  if (!user) {
+    throw new ApiError(HTTP_STATUS.NOT_FOUND, "User not found with this email");
+  }
+
+  const passwordToken = crypto.randomBytes(23).toString("hex");
+
+  const forgotPasswordUrl = `${process.env.BACKEND_URL}/api/v1/auth/change-password/${passwordToken}`;
+
+  sendEmail({
+    email,
+    subject: "Forgot Password",
+    mailGenContent: forgotPasswordMailGenContent(user.fullname, forgotPasswordUrl),
+  });
+
+  user.forgotPasswordToken = passwordToken;
+  user.forgotPasswordExpiry = new Date(Date.now() + 1000 * 60 * 10);
+  await user.save();
+
+  return { user: sanitizeUser(user), urlWillExpire: user.forgotPasswordExpiry };
 };

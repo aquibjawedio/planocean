@@ -1,5 +1,6 @@
 import { Router } from "express";
 import {
+  forgotPasswordController,
   getCurrentUserController,
   loginUserController,
   logoutUserController,
@@ -19,5 +20,6 @@ authRouter.route("/verify-email/:token").get(verifyUserEmailController);
 authRouter.route("/resend-email").post(resendVerificationURLController);
 authRouter.route("/me").get(isLoggedIn, getCurrentUserController);
 authRouter.route("/refresh-access-token").post(refreshAccessTokenController);
+authRouter.route("/forgot-password").post(forgotPasswordController);
 
 export { authRouter };

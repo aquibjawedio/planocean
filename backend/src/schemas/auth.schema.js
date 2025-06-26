@@ -19,3 +19,7 @@ export const verifyUserEmailSchema = z.object({
 export const resendVerificationURLSchema = z.object({
   email: z.string().email("valid email is required"),
 });
+
+export const forgotPasswordSchema = z.object({
+  email: z.string().email("valid email is required"),
+});

@@ -1,4 +1,5 @@
 import {
+  forgotPasswordSchema,
   loginUserSchema,
   registerUserSchema,
   resendVerificationURLSchema,
@@ -8,6 +9,7 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { HTTP_STATUS } from "../constants/httpStatusCodes.js";
 import {
+  forgotPasswordService,
   loginUserService,
   refreshAccessTokenService,
   registerUserService,
@@ -132,13 +134,11 @@ export const refreshAccessTokenController = asyncHandler(async (req, res) => {
     maxAge: 1000 * 60 * 60 * 24 * 7,
   });
 
-  res
-    .status(HTTP_STATUS.OK)
-    .json(
-      new ApiResponse(HTTP_STATUS.OK, "Access token refresh successfully", {
-        accessToken: newAccessToken,
-      })
-    );
+  res.status(HTTP_STATUS.OK).json(
+    new ApiResponse(HTTP_STATUS.OK, "Access token refresh successfully", {
+      accessToken: newAccessToken,
+    })
+  );
 });
 
 export const getCurrentUserController = asyncHandler(async (req, res) => {
@@ -150,3 +150,22 @@ export const getCurrentUserController = asyncHandler(async (req, res) => {
     .status(HTTP_STATUS.OK)
     .json(new ApiResponse(HTTP_STATUS.OK, "Current user data fetched successfully", { user }));
 });
+
+export const forgotPasswordController = asyncHandler(async (req, res) => {
+  const { email } = forgotPasswordSchema.parse(req.body);
+
+  const { user, urlWillExpire } = await forgotPasswordService(email);
+
+  return res
+    .status(HTTP_STATUS.OK)
+    .json(
+      new ApiResponse(HTTP_STATUS.OK, "Link sent on your email to reset your new password", {
+        user,
+        urlWillExpire,
+      })
+    );
+});
+
+export const changePasswordController = asyncHandler(async (req, res) => {});
+
+export const changeUsernameController = asyncHandler(async (req, res) => {});
