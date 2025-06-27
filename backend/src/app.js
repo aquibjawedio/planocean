@@ -1,8 +1,12 @@
 import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
+import session from "express-session";
+import passport from "passport";
 
-import connectDB from "./config/connectDB.js";
+// Imports from folders
+import {connectDB} from "./config/connectDB.js";
+import "./config/passport.js";
 
 // Importing all routes here
 import { healthCheckRouter } from "./routes/healthcheck.route.js";
@@ -23,6 +27,15 @@ app.use(
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET,
+    resave: false,
+    saveUninitialized: false,
+  })
+);
+app.use(passport.initialize());
+app.use(passport.session());
 
 // Database connection
 connectDB();

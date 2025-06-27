@@ -1,7 +1,11 @@
 import { Router } from "express";
+import passport from "passport";
+
+// Imports from folders
 import {
   forgotPasswordController,
   getCurrentUserController,
+  googleOAuthSuccessController,
   loginUserController,
   logoutUserController,
   refreshAccessTokenController,
@@ -29,5 +33,18 @@ authRouter.route("/me").get(isLoggedIn, getCurrentUserController);
 authRouter.route("/update-username").post(isLoggedIn, updateUsernameController);
 
 // Admin Only Routes
+
+// Google Auth Routes
+authRouter.route("/google").get(passport.authenticate("google", { scope: ["profile", "email"] }));
+authRouter.route("/google/callback").get(
+  passport.authenticate("google", {
+    failureRedirect: "/api/v1/auth/failure",
+    successRedirect: "/api/v1/auth/success",
+  })
+);
+authRouter.route("/success").get(googleOAuthSuccessController);
+authRouter.route("/failure").get((req, res) => {
+  res.status(401).json({ success: false, message: "Google authentication failed" });
+});
 
 export { authRouter };

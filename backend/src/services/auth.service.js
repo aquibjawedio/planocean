@@ -211,3 +211,37 @@ export const updateUsernameService = async (username, userId) => {
 
   return { user: sanitizeUser(user), updateStatus: true };
 };
+
+export const handleGoogleOAuthUserService = async (profile) => {
+  const email = profile.emails[0].value;
+
+  let user = await User.findOne({ email });
+
+  if (!user) {
+    let username = email.split("@")[0].toLowerCase();
+    let count = 1;
+
+    while (await User.exists({ username })) {
+      username = `${username}${count++}`;
+    }
+
+    user = await User.create({
+      fullname: profile.displayName,
+      username,
+      email,
+      isEmailVerified: true,
+      avatarUrl: {
+        url: profile.photos?.[0]?.value || "https://placehold.co/400",
+        localpath: "",
+      },
+    });
+  }
+  return user;
+};
+
+export const loginWithGoogleService = async (user) => {
+  const accessToken = user.generateAccessToken();
+  const refreshToken = user.generateRefreshToken();
+
+  return { accessToken, refreshToken };
+};

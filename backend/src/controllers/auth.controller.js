@@ -13,6 +13,7 @@ import { HTTP_STATUS } from "../constants/httpStatusCodes.js";
 import {
   forgotPasswordService,
   loginUserService,
+  loginWithGoogleService,
   refreshAccessTokenService,
   registerUserService,
   resendVerificationURLService,
@@ -203,4 +204,37 @@ export const updateUsernameController = asyncHandler(async (req, res) => {
     .json(
       new ApiResponse(HTTP_STATUS.CREATED, "username updated successfully", { user, updateStatus })
     );
+});
+
+export const googleOAuthSuccessController = asyncHandler(async (req, res) => {
+  const user = req.user;
+
+  if (!user) {
+    throw new ApiError(HTTP_STATUS.UNAUTHORIZED, "Google authentication failed");
+  }
+
+  const { accessToken, refreshToken } = await loginWithGoogleService  (user);
+
+  const refreshCookieOptions = {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+    maxAge: 1000 * 60 * 60 * 24 * 7,
+  };
+  const accessCookieOptions = {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+    maxAge: 1000 * 60 * 15,
+  };
+
+  res.cookie("refreshToken", refreshToken, refreshCookieOptions);
+  res.cookie("accessToken", accessToken, accessCookieOptions);
+
+  return res.status(HTTP_STATUS.OK).json(
+    new ApiResponse(HTTP_STATUS.OK, "Google login successful", {
+      user: sanitizeUser(user),
+      accessToken,
+    })
+  );
 });
