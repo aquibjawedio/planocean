@@ -5,13 +5,14 @@ import session from "express-session";
 import passport from "passport";
 
 // Imports from folders
-import {connectDB} from "./config/connectDB.js";
+import { connectDB } from "./config/connectDB.js";
 import "./config/passport.js";
 
 // Importing all routes here
 import { healthCheckRouter } from "./routes/healthcheck.route.js";
 import { authRouter } from "./routes/auth.route.js";
 import { errorHandler } from "./middlewares/error.middleware.js";
+import { projectRouter } from "./routes/project.route.js";
 
 const app = express();
 
@@ -43,8 +44,9 @@ connectDB();
 // Routes configuration
 app.use("/api/v1/healthcheck", healthCheckRouter);
 app.use("/api/v1/auth", authRouter);
+app.use("/api/v1/project", projectRouter);
 
 // Custom Middlewares
 app.use(errorHandler);
 
-export default app;
+export { app };
