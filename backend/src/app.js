@@ -13,6 +13,7 @@ import { healthCheckRouter } from "./routes/healthcheck.route.js";
 import { authRouter } from "./routes/auth.route.js";
 import { errorHandler } from "./middlewares/error.middleware.js";
 import { projectRouter } from "./routes/project.route.js";
+import { projectNoteRouter } from "./routes/projectnote.route.js";
 
 const app = express();
 
@@ -45,6 +46,7 @@ connectDB();
 app.use("/api/v1/healthcheck", healthCheckRouter);
 app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/project", projectRouter);
+app.use("/api/v1/projectnote", projectNoteRouter);
 
 // Custom Middlewares
 app.use(errorHandler);
