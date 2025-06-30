@@ -46,7 +46,7 @@ export const getProjectByIdController = asyncHandler(async (req, res) => {
 });
 
 export const updateProjectController = asyncHandler(async (req, res) => {
-  // get project by id from user loggedin
+
   const userId = req.user?._id.toString();
   const id = req.params?.projectId;
 
