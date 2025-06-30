@@ -46,7 +46,6 @@ export const getProjectByIdController = asyncHandler(async (req, res) => {
 });
 
 export const updateProjectController = asyncHandler(async (req, res) => {
-
   const userId = req.user?._id.toString();
   const id = req.params?.projectId;
 
@@ -56,7 +55,7 @@ export const updateProjectController = asyncHandler(async (req, res) => {
     createdBy: userId,
   });
 
-  const { updated, project } = await updateProjectService({
+  const { updation, project } = await updateProjectService({
     projectId,
     name,
     description,
@@ -66,7 +65,7 @@ export const updateProjectController = asyncHandler(async (req, res) => {
   return res
     .status(HTTP_STATUS.CREATED)
     .json(
-      new ApiResponse(HTTP_STATUS.CREATED, "Project updated successfully", { updated, project })
+      new ApiResponse(HTTP_STATUS.CREATED, "Project updated successfully", { updation, project })
     );
 });
 

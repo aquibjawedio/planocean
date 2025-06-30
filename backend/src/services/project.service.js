@@ -17,15 +17,15 @@ export const createProjectService = async ({ name, description, createdBy }) => 
 };
 
 export const updateProjectService = async ({ projectId, name, description, createdBy }) => {
-  const updated = await Project.updateOne(
+  const updation = await Project.updateOne(
     { _id: projectId, createdBy: createdBy },
     { $set: { name: name, description: description } }
   );
 
-  if (!updated) {
+  if (!updation) {
     throw new ApiError(HTTP_STATUS.NOT_FOUND, "Unauthorized or project not found");
   }
 
   const project = await Project.findOne({ _id: projectId, createdBy: createdBy });
-  return { updated, project };
+  return { updation, project };
 };
