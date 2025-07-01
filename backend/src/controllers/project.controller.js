@@ -17,10 +17,11 @@ export const createProjectController = asyncHandler(async (req, res) => {
     createdBy: userId,
   });
 
-  const { project } = await createProjectService({ name, description, createdBy });
+  const { project, projectMember } = await createProjectService({ name, description, createdBy });
   return res.status(HTTP_STATUS.CREATED).json(
     new ApiResponse(HTTP_STATUS.CREATED, "Project created successfully", {
       project,
+      projectMember,
     })
   );
 });

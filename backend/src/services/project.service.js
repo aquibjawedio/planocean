@@ -1,6 +1,8 @@
 import { HTTP_STATUS } from "../constants/httpStatusCodes.js";
 import { Project } from "../models/project.model.js";
 import { ApiError } from "../utils/ApiError.js";
+import { ProjectMember } from "../models/projectmember.model.js";
+import { UserRolesEnum } from "../constants/user.constant.js";
 
 export const createProjectService = async ({ name, description, createdBy }) => {
   const project = await Project.create({
@@ -13,7 +15,17 @@ export const createProjectService = async ({ name, description, createdBy }) => 
     throw new ApiError(HTTP_STATUS.INTERNAL_SERVER_ERROR, "Unable to create project");
   }
 
-  return { project };
+  const projectMember = await ProjectMember.create({
+    project: project._id,
+    role: UserRolesEnum.PROJECT_ADMIN,
+    user: createdBy,
+  });
+
+  if (!projectMember) {
+    throw new ApiError(HTTP_STATUS.INTERNAL_SERVER_ERROR, "Unable to create projectMember");
+  }
+
+  return { project, projectMember };
 };
 
 export const updateProjectService = async ({ projectId, name, description, createdBy }) => {
