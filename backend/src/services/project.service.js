@@ -5,6 +5,13 @@ import { ProjectMember } from "../models/projectmember.model.js";
 import { UserRolesEnum } from "../constants/user.constant.js";
 
 export const createProjectService = async ({ name, description, createdBy }) => {
+  const existingProject = await Project.findOne({ name });
+  if (existingProject) {
+    throw new ApiError(
+      HTTP_STATUS.CONFLICT,
+      "Project already exists with this name, please choose other name"
+    );
+  }
   const project = await Project.create({
     name,
     description,

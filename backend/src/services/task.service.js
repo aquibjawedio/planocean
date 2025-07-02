@@ -27,3 +27,37 @@ export const createTaskService = async ({
 
   return { task };
 };
+
+export const updateTaskService = async ({
+  taskId,
+  userId,
+  project,
+  title,
+  description,
+  status,
+  attachments,
+  assignedTo,
+}) => {
+  const updatedTask = await Task.findByIdAndUpdate(
+    taskId,
+    {
+      title,
+      description,
+      status,
+      attachments,
+      assignedTo,
+      project,
+      assignedBy: userId,
+    },
+    { new: true, runValidators: true }
+  );
+
+  if (!updatedTask) {
+    throw new ApiError(
+      HTTP_STATUS.INTERNAL_SERVER_ERROR,
+      "Failed to update the task. Please check the task ID or provided data."
+    );
+  }
+
+  return { updatedTask };
+};
