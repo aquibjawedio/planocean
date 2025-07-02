@@ -4,7 +4,6 @@ import {
   registerUserSchema,
   resendVerificationURLSchema,
   resetPasswordSchema,
-  updateUsernameSchema,
   verifyUserEmailSchema,
 } from "../schemas/auth.schema.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
@@ -18,7 +17,6 @@ import {
   registerUserService,
   resendVerificationURLService,
   resetPasswordService,
-  updateUsernameService,
   verifyUserEmailService,
 } from "../services/auth.service.js";
 import { ApiError } from "../utils/ApiError.js";
@@ -146,16 +144,6 @@ export const refreshAccessTokenController = asyncHandler(async (req, res) => {
   );
 });
 
-export const getCurrentUserController = asyncHandler(async (req, res) => {
-  const user = req.user;
-  if (!user) {
-    throw new ApiError(HTTP_STATUS.BAD_REQUEST, "User not found! please login first");
-  }
-  return res
-    .status(HTTP_STATUS.OK)
-    .json(new ApiResponse(HTTP_STATUS.OK, "Current user data fetched successfully", { user }));
-});
-
 export const forgotPasswordController = asyncHandler(async (req, res) => {
   const { email } = forgotPasswordSchema.parse(req.body);
 
@@ -189,23 +177,6 @@ export const resetPasswordController = asyncHandler(async (req, res) => {
   );
 });
 
-export const updateUsernameController = asyncHandler(async (req, res) => {
-  const { username } = updateUsernameSchema.parse(req.body);
-
-  if (username === req.user.username) {
-    throw new ApiError(
-      HTTP_STATUS.CONFLICT,
-      "Updated username is same as current username. Please select different username to update"
-    );
-  }
-  const { user, updateStatus } = await updateUsernameService(username, req.user._id);
-  return res
-    .status(HTTP_STATUS.CREATED)
-    .json(
-      new ApiResponse(HTTP_STATUS.CREATED, "username updated successfully", { user, updateStatus })
-    );
-});
-
 export const googleOAuthSuccessController = asyncHandler(async (req, res) => {
   const user = req.user;
 
@@ -213,7 +184,7 @@ export const googleOAuthSuccessController = asyncHandler(async (req, res) => {
     throw new ApiError(HTTP_STATUS.UNAUTHORIZED, "Google authentication failed");
   }
 
-  const { accessToken, refreshToken } = await loginWithGoogleService  (user);
+  const { accessToken, refreshToken } = await loginWithGoogleService(user);
 
   const refreshCookieOptions = {
     httpOnly: true,

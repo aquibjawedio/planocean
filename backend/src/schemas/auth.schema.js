@@ -29,7 +29,3 @@ export const resetPasswordSchema = z.object({
   newPassword: z.string().min(8, "password must be of 8 characters"),
   confirmNewPassword: z.string().min(8, "password must be of 8 characters"),
 });
-
-export const updateUsernameSchema = z.object({
-  username: z.string().min(3, { message: "Username must be at least 3 characters long." }),
-});

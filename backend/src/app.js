@@ -15,6 +15,8 @@ import { errorHandler } from "./middlewares/error.middleware.js";
 import { projectRouter } from "./routes/project.route.js";
 import { projectNoteRouter } from "./routes/projectnote.route.js";
 import { taskRouter } from "./routes/task.route.js";
+import { userRouter } from "./routes/user.route.js";
+import { adminRouter } from "./routes/admin.route.js";
 
 const app = express();
 
@@ -46,6 +48,8 @@ connectDB();
 // Routes configuration
 app.use("/api/v1/healthcheck", healthCheckRouter);
 app.use("/api/v1/auth", authRouter);
+app.use("/api/v1/user", userRouter);
+app.use("/api/v1/admin", adminRouter);
 app.use("/api/v1/project", projectRouter);
 app.use("/api/v1/projectnote", projectNoteRouter);
 app.use("/api/v1/task", taskRouter);

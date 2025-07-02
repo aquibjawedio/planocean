@@ -199,19 +199,6 @@ export const resetPasswordService = async ({ token, newPassword, confirmNewPassw
   return { user, resetStatus: true };
 };
 
-export const updateUsernameService = async (username, userId) => {
-  const user = await User.findById(userId);
-
-  if (!user) {
-    throw new ApiError(HTTP_STATUS.NOT_FOUND, "User not found! Please login first");
-  }
-
-  user.username = username;
-  await user.save();
-
-  return { user: sanitizeUser(user), updateStatus: true };
-};
-
 export const handleGoogleOAuthUserService = async (profile) => {
   const email = profile.emails[0].value;
 

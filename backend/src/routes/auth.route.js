@@ -4,7 +4,6 @@ import passport from "passport";
 // Imports from folders
 import {
   forgotPasswordController,
-  getCurrentUserController,
   googleOAuthSuccessController,
   loginUserController,
   logoutUserController,
@@ -12,10 +11,9 @@ import {
   registerUserController,
   resendVerificationURLController,
   resetPasswordController,
-  updateUsernameController,
   verifyUserEmailController,
 } from "../controllers/auth.controller.js";
-import { isAdmin, isLoggedIn } from "../middlewares/auth.middleware.js";
+import { isLoggedIn } from "../middlewares/auth.middleware.js";
 
 const authRouter = Router();
 
@@ -29,10 +27,7 @@ authRouter.route("/reset-password/:token").post(resetPasswordController);
 
 // Login Only Routes
 authRouter.route("/logout").post(isLoggedIn, logoutUserController);
-authRouter.route("/me").get(isLoggedIn, getCurrentUserController);
-authRouter.route("/update-username").post(isLoggedIn, updateUsernameController);
 
-// Admin Only Routes
 
 // Google Auth Routes
 authRouter.route("/google").get(passport.authenticate("google", { scope: ["profile", "email"] }));
