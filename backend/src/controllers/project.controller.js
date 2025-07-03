@@ -9,6 +9,7 @@ import {
 import { createProjectService, updateProjectService } from "../services/project.service.js";
 import { Project } from "../models/project.model.js";
 import { ApiError } from "../utils/ApiError.js";
+import { ProjectMember } from "../models/projectmember.model.js";
 
 export const createProjectController = asyncHandler(async (req, res) => {
   const userId = req.user?._id.toString();
@@ -27,11 +28,33 @@ export const createProjectController = asyncHandler(async (req, res) => {
 });
 
 export const getAllProjectController = asyncHandler(async (req, res) => {
+  const userId = req.user._id.toString();
+
+  const memberships = await ProjectMember.find({ user: userId });
+  const memberProjectIds = memberships.map((m) => m.project.toString());
+
+  const projects = await Project.find({
+    $or: [{ createdBy: userId }, { _id: { $in: memberProjectIds } }],
+  });
+
+  return res.status(HTTP_STATUS.OK).json(
+    new ApiResponse(HTTP_STATUS.OK, "Fetched all project associated with user successfully", {
+      projects,
+      memberships,
+    })
+  );
+});
+
+export const getProjectsCreatedByUserController = asyncHandler(async (req, res) => {
   const projects = await Project.find({ createdBy: req.user._id.toString() });
+
+  if (!projects) {
+    throw new ApiError(HTTP_STATUS.NOT_FOUND, "No projects found created by user");
+  }
 
   return res
     .status(HTTP_STATUS.OK)
-    .json(new ApiResponse(HTTP_STATUS.OK, "Fetched all project successfully", { projects }));
+    .json(new ApiResponse(HTTP_STATUS.OK, "Fetched all projects created by user", { projects }));
 });
 
 export const getProjectByIdController = asyncHandler(async (req, res) => {
@@ -56,7 +79,7 @@ export const updateProjectController = asyncHandler(async (req, res) => {
     createdBy: userId,
   });
 
-  const { updation, project } = await updateProjectService({
+  const { updatedProject } = await updateProjectService({
     projectId,
     name,
     description,
@@ -65,9 +88,7 @@ export const updateProjectController = asyncHandler(async (req, res) => {
 
   return res
     .status(HTTP_STATUS.CREATED)
-    .json(
-      new ApiResponse(HTTP_STATUS.CREATED, "Project updated successfully", { updation, project })
-    );
+    .json(new ApiResponse(HTTP_STATUS.CREATED, "Project updated successfully", { updatedProject }));
 });
 
 export const deleteProjectController = asyncHandler(async (req, res) => {});

@@ -4,7 +4,7 @@ import { createTaskController, updateTaskController } from "../controllers/task.
 
 const taskRouter = Router();
 
-taskRouter.route("/create-task/:projectId").post(isLoggedIn, createTaskController);
-taskRouter.route("/update-task/:taskId").post(isLoggedIn, updateTaskController);
+taskRouter.route("/:projectId/create-task").post(isLoggedIn, createTaskController);
+taskRouter.route("/:projectId/:taskId/update-task").post(isLoggedIn, updateTaskController);
 
 export { taskRouter };

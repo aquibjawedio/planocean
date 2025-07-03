@@ -17,6 +17,7 @@ import { projectNoteRouter } from "./routes/projectnote.route.js";
 import { taskRouter } from "./routes/task.route.js";
 import { userRouter } from "./routes/user.route.js";
 import { adminRouter } from "./routes/admin.route.js";
+import { subtaskRouter } from "./routes/subtask.route.js";
 
 const app = express();
 
@@ -51,8 +52,9 @@ app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/user", userRouter);
 app.use("/api/v1/admin", adminRouter);
 app.use("/api/v1/project", projectRouter);
+app.use("/api/v1/project", taskRouter);
+app.use("/api/v1/project", subtaskRouter);
 app.use("/api/v1/projectnote", projectNoteRouter);
-app.use("/api/v1/task", taskRouter);
 
 // Custom Middlewares
 app.use(errorHandler);
