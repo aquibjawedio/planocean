@@ -17,13 +17,23 @@ export const registerUserService = async (fullname, username, email, password) =
   if (existingEmail) {
     throw new ApiError(HTTP_STATUS.CONFLICT, "User already exists with this email");
   }
+
   const existingUsername = await User.findOne({ username });
+
   if (existingUsername) {
     throw new ApiError(HTTP_STATUS.CONFLICT, "User already exists with this username");
   }
 
-  const unHashedToken = crypto.randomBytes(32).toString("hex");
-  const hashedToken = crypto.createHash("sha256").update(unHashedToken).digest("hex");
+  const user = await User.create({
+    fullname,
+    username,
+    email,
+    password,
+  });
+
+  const { unHashedToken, hashedToken } = user.generateTemporaryToken();
+  user.emailVerificationToken = hashedToken;
+  await user.save();
 
   const verificationUrl = `${process.env.FRONTEND_URL}/api/v1/auth/verify-email/${unHashedToken}`;
 
@@ -33,13 +43,6 @@ export const registerUserService = async (fullname, username, email, password) =
     mailGenContent: emailVerificationMailGenContent(fullname, verificationUrl),
   });
 
-  const user = await User.create({
-    fullname,
-    username,
-    email,
-    password,
-    emailVerificationToken: hashedToken,
-  });
   return sanitizeUser(user);
 };
 
