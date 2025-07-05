@@ -1,4 +1,5 @@
 import { HTTP_STATUS } from "../constants/httpStatusCodes.js";
+import { isProjectAdmin } from "../middlewares/subtask.middleware.js";
 import { Task } from "../models/task.model.js";
 import { ApiError } from "../utils/ApiError.js";
 
@@ -27,6 +28,8 @@ export const createTaskService = async ({
 
   return { task };
 };
+
+export const getAllTaskService = async ({}) => {};
 
 export const updateTaskService = async ({
   taskId,
@@ -60,4 +63,20 @@ export const updateTaskService = async ({
   }
 
   return { updatedTask };
+};
+
+export const updatedTaskStatusService = async ({ taskId, userId, projectId, status }) => {
+  const task = await Task.findById(taskId);
+
+  if (!task) {
+    throw new ApiError(HTTP_STATUS.NOT_FOUND, "Task not found, invalid task id.");
+  }
+
+  if (task.assignedTo.toString() !== userId || !isProjectAdmin) {
+    throw new ApiError(HTTP_STATUS.UNAUTHORIZED, "Unauthorized! Task is not assigned to you.");
+  }
+
+  task.status = status;
+  await task.save();
+  return { task };
 };

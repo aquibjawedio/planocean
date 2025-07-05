@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { AvailableTaskStatus } from "../constants/task.constant.js";
 
-export const createTaskScema = z.object({
+export const createTaskSchema = z.object({
   userId: z.string().trim().min(1, "User id is required"),
   project: z.string().trim().min(1, "Project id is required"),
   title: z
@@ -30,7 +30,7 @@ export const createTaskScema = z.object({
   assignedTo: z.string().trim().min(1, "Assigned user id is required"),
 });
 
-export const updateTaskScema = z.object({
+export const updateTaskSchema = z.object({
   taskId: z.string().trim().min(1, "Task id is required"),
   userId: z.string().trim().min(1, "User id is required"),
   project: z.string().trim().min(1, "Project id is required"),
@@ -58,4 +58,25 @@ export const updateTaskScema = z.object({
     })
   ),
   assignedTo: z.string().trim().min(1, "Assigned user id is required"),
+});
+
+export const updatedTaskStatusSchema = z.object({
+  status: z
+    .enum(AvailableTaskStatus, {
+      required_error: "Status is required",
+      invalid_type_error: "Status must be one of TODO, IN_PROGRESS, or DONE",
+    })
+    .default("todo"),
+  taskId: z.string().trim().min(1, "Task id is required"),
+  userId: z.string().trim().min(1, "User id is required"),
+  projectId: z.string().trim().min(1, "Project id is required"),
+});
+
+export const getAllTaskSchema = z.object({
+  projectId: z.string().trim().min(1, "Project id is required"),
+});
+
+export const deleteTaskSchema = z.object({
+  taskId: z.string().trim().min(1, "Task id is required"),
+  projectId: z.string().trim().min(1, "Project id is required"),
 });
