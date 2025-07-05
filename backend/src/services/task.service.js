@@ -72,6 +72,10 @@ export const updatedTaskStatusService = async ({ taskId, userId, projectId, stat
     throw new ApiError(HTTP_STATUS.NOT_FOUND, "Task not found, invalid task id.");
   }
 
+  if (task.status == status) {
+    throw new ApiError(HTTP_STATUS.BAD_REQUEST, "No changes in status ");
+  }
+
   if (task.assignedTo.toString() !== userId || !isProjectAdmin) {
     throw new ApiError(HTTP_STATUS.UNAUTHORIZED, "Unauthorized! Task is not assigned to you.");
   }

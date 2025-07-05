@@ -4,6 +4,7 @@ import {
   createTaskController,
   deleteTaskController,
   getAllTaskController,
+  getTaskByIdController,
   updatedTaskStatusController,
   updateTaskController,
 } from "../controllers/task.controller.js";
@@ -19,6 +20,9 @@ taskRouter
   .route("/:projectId/:taskId/update-task-status")
   .post(isLoggedIn, isProjectMember, updatedTaskStatusController);
 taskRouter.route("/:projectId/get-all-task").get(isLoggedIn, isProjectMember, getAllTaskController);
+taskRouter
+  .route("/:projectId/get-task-by-id/:taskId")
+  .get(isLoggedIn, isProjectMember, getTaskByIdController);
 taskRouter
   .route("/:projectId/:taskId/delete-task")
   .delete(isLoggedIn, isProjectAdmin, deleteTaskController);

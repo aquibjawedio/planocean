@@ -80,3 +80,7 @@ export const deleteTaskSchema = z.object({
   taskId: z.string().trim().min(1, "Task id is required"),
   projectId: z.string().trim().min(1, "Project id is required"),
 });
+
+export const getTaskByIdSchema = z.object({
+  taskId: z.string().trim().min(1, "Task id is required"),
+});

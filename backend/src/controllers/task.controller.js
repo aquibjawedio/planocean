@@ -7,6 +7,7 @@ import {
   updateTaskSchema,
   getAllTaskSchema,
   deleteTaskSchema,
+  getTaskByIdSchema,
 } from "../schemas/task.schema.js";
 import {
   createTaskService,
@@ -49,6 +50,19 @@ export const getAllTaskController = asyncHandler(async (req, res) => {
   return res
     .status(HTTP_STATUS.OK)
     .json(new ApiResponse(HTTP_STATUS.OK, "All tasks fetched successfully", { tasks }));
+});
+
+export const getTaskByIdController = asyncHandler(async (req, res) => {
+  const { taskId } = getTaskByIdSchema.parse({ taskId: req.params.taskId });
+  const task = await Task.findById(taskId);
+
+  if (!task) {
+    throw new ApiError(HTTP_STATUS.NOT_FOUND, "Task not found! Invalid task id");
+  }
+
+  return res
+    .status(HTTP_STATUS.OK)
+    .json(new ApiResponse(HTTP_STATUS.OK, "Task fetched by id successfully", { task }));
 });
 
 export const updateTaskController = asyncHandler(async (req, res) => {
