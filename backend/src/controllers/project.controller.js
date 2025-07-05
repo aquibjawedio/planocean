@@ -2,11 +2,18 @@ import { HTTP_STATUS } from "../constants/httpStatusCodes.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import {
+  addMemberSchema,
   createProjectSchema,
   getProjectByIdSchema,
+  updateMemberRoleSchema,
   updateProjectSchema,
 } from "../schemas/project.schema.js";
-import { createProjectService, updateProjectService } from "../services/project.service.js";
+import {
+  addMemberService,
+  createProjectService,
+  updateMemberRoleService,
+  updateProjectService,
+} from "../services/project.service.js";
 import { Project } from "../models/project.model.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ProjectMember } from "../models/projectmember.model.js";
@@ -89,6 +96,32 @@ export const updateProjectController = asyncHandler(async (req, res) => {
   return res
     .status(HTTP_STATUS.CREATED)
     .json(new ApiResponse(HTTP_STATUS.CREATED, "Project updated successfully", { updatedProject }));
+});
+
+export const addMemberController = asyncHandler(async (req, res) => {
+  const { username, projectId, role } = addMemberSchema.parse({
+    ...req.body,
+    projectId: req.params.projectId,
+  });
+
+  const { member } = await addMemberService({ username, projectId, role });
+
+  return res
+    .status(HTTP_STATUS.CREATED)
+    .json(new ApiResponse(HTTP_STATUS.CREATED, "Member added successfully", { member }));
+});
+
+export const updateMemberRoleController = asyncHandler(async (req, res) => {
+  const { username, projectId, role } = updateMemberRoleSchema.parse({
+    ...req.body,
+    projectId: req.params.projectId,
+  });
+
+  const { member } = await updateMemberRoleService({ username, projectId, role });
+
+  return res
+    .status(HTTP_STATUS.CREATED)
+    .json(new ApiResponse(HTTP_STATUS.CREATED, "Member role update successfully", { member }));
 });
 
 export const deleteProjectController = asyncHandler(async (req, res) => {});
