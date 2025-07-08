@@ -1,8 +1,5 @@
-import { sanitizeFilter } from "mongoose";
-import { User } from "../models/user.model.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import jwt from "jsonwebtoken";
-import { sanitizeUser } from "../utils/sanitizeUser.js";
 import { ApiError } from "../utils/ApiError.js";
 import { HTTP_STATUS } from "../constants/httpStatusCodes.js";
 
@@ -13,17 +10,13 @@ export const isLoggedIn = asyncHandler(async (req, res, next) => {
       throw new ApiError(HTTP_STATUS.UNAUTHORIZED, "Unauthorized! Access token missing");
     }
 
-    const decodedData = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
-    if (!decodedData) {
+    const decodedUser = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
+    console.log("decodedUser : ", decodedUser);
+    if (!decodedUser) {
       throw new ApiError(HTTP_STATUS.UNAUTHORIZED, "Invalid access token");
     }
 
-    const user = await User.findById(decodedData._id);
-    if (!user) {
-      throw new ApiError(HTTP_STATUS.UNAUTHORIZED, "Invalid access token");
-    }
-
-    req.user = sanitizeUser(user);
+    req.user = decodedUser;
     next();
   } catch (error) {
     throw new ApiError(HTTP_STATUS.UNAUTHORIZED, error?.message || "Invalid access token", error);
