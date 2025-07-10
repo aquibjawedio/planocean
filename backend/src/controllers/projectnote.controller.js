@@ -1,4 +1,3 @@
-import { HTTP_STATUS } from "../constants/httpStatusCodes.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { createProjectNoteSchema } from "../schemas/projectnote.schema.js";
@@ -13,8 +12,8 @@ export const createProjectNoteController = asyncHandler(async (req, res) => {
   });
 
   const { projectNote } = await createProjectNoteService({ content, project, createdBy });
-  return res.status(HTTP_STATUS.CREATED).json(
-    new ApiResponse(HTTP_STATUS.CREATED, "Note create successfully", {
+  return res.status(201).json(
+    new ApiResponse(201, "Note create successfully", {
       projectNote,
     })
   );
@@ -28,12 +27,12 @@ export const getProjectNoteController = asyncHandler(async (req, res) => {
   });
 
   if (!projectNote) {
-    throw new ApiError(HTTP_STATUS.NOT_FOUND, "Project note not found for this project");
+    throw new ApiError(404, "Project note not found for this project");
   }
 
   return res
-    .status(HTTP_STATUS.OK)
-    .json(new ApiResponse(HTTP_STATUS.OK, "Project Note fetched successfully", { projectNote }));
+    .status(200)
+    .json(new ApiResponse(200, "Project Note fetched successfully", { projectNote }));
 });
 
 export const updateProjectNoteController = asyncHandler(async (req, res) => {
@@ -46,21 +45,19 @@ export const updateProjectNoteController = asyncHandler(async (req, res) => {
   const updation = await ProjectNote.updateOne({ project, createdBy }, { $set: { content } });
 
   if (!updation) {
-    throw new ApiError(HTTP_STATUS.NOT_FOUND, "Project note not found for this project");
+    throw new ApiError(404, "Project note not found for this project");
   }
 
   const projectNote = await ProjectNote.findOne({ createdBy, project });
 
   if (!projectNote) {
-    throw new ApiError(HTTP_STATUS.NOT_FOUND, "Project Note not found for this project");
+    throw new ApiError(404, "Project Note not found for this project");
   }
 
-  return res
-    .status(HTTP_STATUS.OK)
-    .json(
-      new ApiResponse(HTTP_STATUS.OK, "Project Note updated successfully", {
-        updation,
-        projectNote,
-      })
-    );
+  return res.status(200).json(
+    new ApiResponse(200, "Project Note updated successfully", {
+      updation,
+      projectNote,
+    })
+  );
 });

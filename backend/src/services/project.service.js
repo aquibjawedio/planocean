@@ -1,4 +1,3 @@
-import { HTTP_STATUS } from "../constants/httpStatusCodes.js";
 import { Project } from "../models/project.model.js";
 import { User } from "../models/user.model.js";
 import { ApiError } from "../utils/ApiError.js";
@@ -8,10 +7,7 @@ import { UserRolesEnum } from "../constants/user.constant.js";
 export const createProjectService = async ({ name, description, createdBy }) => {
   const existingProject = await Project.findOne({ name });
   if (existingProject) {
-    throw new ApiError(
-      HTTP_STATUS.CONFLICT,
-      "Project already exists with this name, please choose other name"
-    );
+    throw new ApiError(409, "Project already exists with this name, please choose other name");
   }
   const project = await Project.create({
     name,
@@ -20,7 +16,7 @@ export const createProjectService = async ({ name, description, createdBy }) => 
   });
 
   if (!project) {
-    throw new ApiError(HTTP_STATUS.INTERNAL_SERVER_ERROR, "Unable to create project");
+    throw new ApiError(500, "Unable to create project");
   }
 
   const projectMember = await ProjectMember.create({
@@ -30,7 +26,7 @@ export const createProjectService = async ({ name, description, createdBy }) => 
   });
 
   if (!projectMember) {
-    throw new ApiError(HTTP_STATUS.INTERNAL_SERVER_ERROR, "Unable to create projectMember");
+    throw new ApiError(500, "Unable to create projectMember");
   }
 
   return { project, projectMember };
@@ -44,7 +40,7 @@ export const updateProjectService = async ({ projectId, name, description, creat
   );
 
   if (!updatedProject) {
-    throw new ApiError(HTTP_STATUS.NOT_FOUND, "Unauthorized or project not found");
+    throw new ApiError(404, "Unauthorized or project not found");
   }
 
   return { updatedProject };
@@ -53,7 +49,7 @@ export const updateProjectService = async ({ projectId, name, description, creat
 export const addMemberService = async ({ username, projectId, role }) => {
   const existingUser = await User.findOne({ username });
   if (!existingUser) {
-    throw new ApiError(HTTP_STATUS.NOT_FOUND, "User not found! Invalid username");
+    throw new ApiError(404, "User not found! Invalid username");
   }
 
   const existingMember = await ProjectMember.findOne({
@@ -62,7 +58,7 @@ export const addMemberService = async ({ username, projectId, role }) => {
   });
 
   if (existingMember) {
-    throw new ApiError(HTTP_STATUS.CONFLICT, "Member already exists in this project");
+    throw new ApiError(409, "Member already exists in this project");
   }
 
   const member = await ProjectMember.create({
@@ -72,7 +68,7 @@ export const addMemberService = async ({ username, projectId, role }) => {
   });
 
   if (!member) {
-    throw new ApiError(HTTP_STATUS.INTERNAL_SERVER_ERROR, "Unable to add member in the project");
+    throw new ApiError(500, "Unable to add member in the project");
   }
   return { member };
 };
@@ -81,7 +77,7 @@ export const updateMemberRoleService = async ({ username, projectId, role }) => 
   const existingUser = await User.findOne({ username });
 
   if (!existingUser) {
-    throw new ApiError(HTTP_STATUS.NOT_FOUND, "User not found! Invalid username");
+    throw new ApiError(404, "User not found! Invalid username");
   }
 
   const member = await ProjectMember.findOne({
@@ -90,11 +86,11 @@ export const updateMemberRoleService = async ({ username, projectId, role }) => 
   });
 
   if (!member) {
-    throw new ApiError(HTTP_STATUS.CONFLICT, "User doesn't exists in this project");
+    throw new ApiError(409, "User doesn't exists in this project");
   }
 
   if (member.role === role) {
-    throw new ApiError(HTTP_STATUS.BAD_REQUEST, "No change in role of user");
+    throw new ApiError(400, "No change in role of user");
   }
 
   member.role = role;

@@ -1,4 +1,3 @@
-import { HTTP_STATUS } from "../constants/httpStatusCodes.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import {
@@ -35,8 +34,8 @@ export const createTaskController = asyncHandler(async (req, res) => {
     assignedTo,
   });
 
-  return res.status(HTTP_STATUS.CREATED).json(
-    new ApiResponse(HTTP_STATUS.CREATED, "Task created successfully", {
+  return res.status(201).json(
+    new ApiResponse(201, "Task created successfully", {
       task,
     })
   );
@@ -47,9 +46,7 @@ export const getAllTaskController = asyncHandler(async (req, res) => {
 
   const tasks = await Task.find({ project: projectId });
 
-  return res
-    .status(HTTP_STATUS.OK)
-    .json(new ApiResponse(HTTP_STATUS.OK, "All tasks fetched successfully", { tasks }));
+  return res.status(200).json(new ApiResponse(200, "All tasks fetched successfully", { tasks }));
 });
 
 export const getTaskByIdController = asyncHandler(async (req, res) => {
@@ -57,12 +54,10 @@ export const getTaskByIdController = asyncHandler(async (req, res) => {
   const task = await Task.findById(taskId);
 
   if (!task) {
-    throw new ApiError(HTTP_STATUS.NOT_FOUND, "Task not found! Invalid task id");
+    throw new ApiError(404, "Task not found! Invalid task id");
   }
 
-  return res
-    .status(HTTP_STATUS.OK)
-    .json(new ApiResponse(HTTP_STATUS.OK, "Task fetched by id successfully", { task }));
+  return res.status(200).json(new ApiResponse(200, "Task fetched by id successfully", { task }));
 });
 
 export const updateTaskController = asyncHandler(async (req, res) => {
@@ -84,14 +79,10 @@ export const updateTaskController = asyncHandler(async (req, res) => {
     assignedTo,
   });
 
-  return res.status(HTTP_STATUS.CREATED).json(
-    new ApiResponse(
-      HTTP_STATUS.CREATED,
-      "The task was updated successfully and the changes were saved.",
-      {
-        updatedTask,
-      }
-    )
+  return res.status(201).json(
+    new ApiResponse(201, "The task was updated successfully and the changes were saved.", {
+      updatedTask,
+    })
   );
 });
 
@@ -105,8 +96,8 @@ export const updatedTaskStatusController = asyncHandler(async (req, res) => {
 
   const { task } = await updatedTaskStatusService({ taskId, userId, projectId, status });
 
-  return res.status(HTTP_STATUS.CREATED).json(
-    new ApiResponse(HTTP_STATUS.CREATED, "Task status updated successfully", {
+  return res.status(201).json(
+    new ApiResponse(201, "Task status updated successfully", {
       task,
     })
   );
@@ -121,10 +112,10 @@ export const deleteTaskController = asyncHandler(async (req, res) => {
   const deletedTask = await Task.findByIdAndDelete(taskId);
 
   if (!deletedTask) {
-    throw new ApiError(HTTP_STATUS.NOT_FOUND, "Task not found, invalid task id");
+    throw new ApiError(404, "Task not found, invalid task id");
   }
 
   return res
-    .status(HTTP_STATUS.OK)
-    .json(new ApiResponse(HTTP_STATUS.OK, "Task deleted successfully", { task: deletedTask }));
+    .status(200)
+    .json(new ApiResponse(200, "Task deleted successfully", { task: deletedTask }));
 });

@@ -3,7 +3,6 @@ import Mailgen from "mailgen";
 import { mailtrapTransporter } from "../config/mailtrapMailer.js";
 import { resendTransporter } from "../config/resendMailer.js";
 import { ApiError } from "./ApiError.js";
-import { HTTP_STATUS } from "../constants/httpStatusCodes.js";
 
 export const sendEmail = async ({ email, subject, mailGenContent }) => {
   const mailGenerator = new Mailgen({
@@ -32,7 +31,7 @@ export const sendEmail = async ({ email, subject, mailGenContent }) => {
 
       if (!info?.messageId) {
         console.error("Mailtrap failed:", info);
-        throw new ApiError(HTTP_STATUS.BAD_REQUEST, "Failed to send email via Mailtrap", info);
+        throw new ApiError(400, "Failed to send email via Mailtrap", info);
       }
     } else {
       const response = await resendTransporter.emails.send({
@@ -45,7 +44,7 @@ export const sendEmail = async ({ email, subject, mailGenContent }) => {
 
       if (!response || response.error) {
         console.error("Resend failed:", response?.error);
-        throw new ApiError(HTTP_STATUS.BAD_REQUEST, "Failed to send email via Resend", response);
+        throw new ApiError(400, "Failed to send email via Resend", response);
       }
     }
 
@@ -55,7 +54,7 @@ export const sendEmail = async ({ email, subject, mailGenContent }) => {
     if (error instanceof ApiError) {
       throw error;
     }
-    throw new ApiError(HTTP_STATUS.INTERNAL_SERVER_ERROR, "Unable to send email", error);
+    throw new ApiError(500, "Unable to send email", error);
   }
 };
 

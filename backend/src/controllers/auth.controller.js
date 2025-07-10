@@ -8,7 +8,7 @@ import {
 } from "../schemas/auth.schema.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
-import { HTTP_STATUS } from "../constants/httpStatusCodes.js";
+
 import {
   forgotPasswordService,
   loginUserService,
@@ -27,15 +27,13 @@ export const registerUserController = asyncHandler(async (req, res) => {
 
   const user = await registerUserService(fullname, username, email, password);
 
-  return res
-    .status(HTTP_STATUS.CREATED)
-    .json(new ApiResponse(HTTP_STATUS.CREATED, "User registered successfully", user));
+  return res.status(201).json(new ApiResponse(201, "User registered successfully", user));
 });
 
 export const loginUserController = asyncHandler(async (req, res) => {
   if (req.cookies?.refreshToken) {
     console.log(req.cookies?.refreshToken);
-    throw new ApiError(HTTP_STATUS.BAD_REQUEST, "User is already loggedin");
+    throw new ApiError(400, "User is already loggedin");
   }
   const { email, password } = loginUserSchema.parse(req.body);
 
@@ -58,14 +56,14 @@ export const loginUserController = asyncHandler(async (req, res) => {
   res.cookie("accessToken", accessToken, accessCookieOptions);
 
   return res
-    .status(HTTP_STATUS.OK)
-    .json(new ApiResponse(HTTP_STATUS.OK, "User loggedin successfully", { user, accessToken }));
+    .status(200)
+    .json(new ApiResponse(200, "User loggedin successfully", { user, accessToken }));
 });
 
 export const logoutUserController = asyncHandler(async (req, res) => {
   const token = req.cookies?.refreshToken;
   if (!token) {
-    throw new ApiError(HTTP_STATUS.BAD_REQUEST, "User is already logged out");
+    throw new ApiError(400, "User is already logged out");
   }
 
   res.clearCookie("refreshToken", {
@@ -82,21 +80,19 @@ export const logoutUserController = asyncHandler(async (req, res) => {
     maxAge: 1000 * 60 * 60 * 24 * 7,
   });
 
-  res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, "User logged out successfully"));
+  res.status(200).json(new ApiResponse(200, "User logged out successfully"));
 });
 
 export const verifyUserEmailController = asyncHandler(async (req, res) => {
   const { token } = verifyUserEmailSchema.parse({ token: req.params?.token });
 
   if (!token) {
-    throw new ApiError(HTTP_STATUS.NOT_FOUND, "Token not found");
+    throw new ApiError(404, "Token not found");
   }
   const { user, verified } = await verifyUserEmailService(token);
   res
-    .status(HTTP_STATUS.OK)
-    .json(
-      new ApiResponse(HTTP_STATUS.OK, "User email verification successfull", { user, verified })
-    );
+    .status(200)
+    .json(new ApiResponse(200, "User email verification successfull", { user, verified }));
 });
 
 export const resendVerificationURLController = asyncHandler(async (req, res) => {
@@ -104,8 +100,8 @@ export const resendVerificationURLController = asyncHandler(async (req, res) => 
 
   const user = await resendVerificationURLService(email);
 
-  return res.status(HTTP_STATUS.OK).json(
-    new ApiResponse(HTTP_STATUS.OK, "Email resend successfully. Please check spam folder", {
+  return res.status(200).json(
+    new ApiResponse(200, "Email resend successfully. Please check spam folder", {
       user,
     })
   );
@@ -114,13 +110,13 @@ export const resendVerificationURLController = asyncHandler(async (req, res) => 
 export const refreshAccessTokenController = asyncHandler(async (req, res) => {
   const refreshToken = req.cookies?.refreshToken || req.body.refreshToken;
   if (!refreshToken) {
-    throw new ApiError(HTTP_STATUS.UNAUTHORIZED, "Unauthorized! Refresh token is missing");
+    throw new ApiError(401, "Unauthorized! Refresh token is missing");
   }
 
   const { user, newAccessToken, newRefreshToken } = await refreshAccessTokenService(refreshToken);
 
   if (!user) {
-    throw new ApiError(HTTP_STATUS.UNAUTHORIZED, "User not found");
+    throw new ApiError(401, "User not found");
   }
 
   res.cookie("accessToken", newAccessToken, {
@@ -137,8 +133,8 @@ export const refreshAccessTokenController = asyncHandler(async (req, res) => {
     maxAge: 1000 * 60 * 60 * 24 * 7,
   });
 
-  res.status(HTTP_STATUS.OK).json(
-    new ApiResponse(HTTP_STATUS.OK, "Access token refresh successfully", {
+  res.status(200).json(
+    new ApiResponse(200, "Access token refresh successfully", {
       accessToken: newAccessToken,
     })
   );
@@ -149,8 +145,8 @@ export const forgotPasswordController = asyncHandler(async (req, res) => {
 
   const { user, urlWillExpire } = await forgotPasswordService(email);
 
-  return res.status(HTTP_STATUS.OK).json(
-    new ApiResponse(HTTP_STATUS.OK, "Link sent on your email to reset your new password", {
+  return res.status(200).json(
+    new ApiResponse(200, "Link sent on your email to reset your new password", {
       user,
       urlWillExpire,
     })
@@ -169,8 +165,8 @@ export const resetPasswordController = asyncHandler(async (req, res) => {
     confirmNewPassword,
   });
 
-  return res.status(HTTP_STATUS.OK).json(
-    new ApiResponse(HTTP_STATUS.OK, "User password reset successfull", {
+  return res.status(200).json(
+    new ApiResponse(200, "User password reset successfull", {
       user,
       resetStatus,
     })
@@ -181,7 +177,7 @@ export const googleOAuthSuccessController = asyncHandler(async (req, res) => {
   const user = req.user;
 
   if (!user) {
-    throw new ApiError(HTTP_STATUS.UNAUTHORIZED, "Google authentication failed");
+    throw new ApiError(401, "Google authentication failed");
   }
 
   const { accessToken, refreshToken } = await loginWithGoogleService(user);
@@ -202,8 +198,8 @@ export const googleOAuthSuccessController = asyncHandler(async (req, res) => {
   res.cookie("refreshToken", refreshToken, refreshCookieOptions);
   res.cookie("accessToken", accessToken, accessCookieOptions);
 
-  return res.status(HTTP_STATUS.OK).json(
-    new ApiResponse(HTTP_STATUS.OK, "Google login successful", {
+  return res.status(200).json(
+    new ApiResponse(200, "Google login successful", {
       user: sanitizeUser(user),
       accessToken,
     })

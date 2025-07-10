@@ -1,4 +1,3 @@
-import { HTTP_STATUS } from "../constants/httpStatusCodes.js";
 import { isProjectAdmin } from "../middlewares/subtask.middleware.js";
 import { Task } from "../models/task.model.js";
 import { ApiError } from "../utils/ApiError.js";
@@ -23,7 +22,7 @@ export const createTaskService = async ({
   });
 
   if (!task) {
-    throw new ApiError(HTTP_STATUS.INTERNAL_SERVER_ERROR, "Unable to create task");
+    throw new ApiError(500, "Unable to create task");
   }
 
   return { task };
@@ -57,7 +56,7 @@ export const updateTaskService = async ({
 
   if (!updatedTask) {
     throw new ApiError(
-      HTTP_STATUS.INTERNAL_SERVER_ERROR,
+      500,
       "Failed to update the task. Please check the task ID or provided data."
     );
   }
@@ -69,15 +68,15 @@ export const updatedTaskStatusService = async ({ taskId, userId, projectId, stat
   const task = await Task.findById(taskId);
 
   if (!task) {
-    throw new ApiError(HTTP_STATUS.NOT_FOUND, "Task not found, invalid task id.");
+    throw new ApiError(404, "Task not found, invalid task id.");
   }
 
   if (task.status == status) {
-    throw new ApiError(HTTP_STATUS.BAD_REQUEST, "No changes in status ");
+    throw new ApiError(400, "No changes in status ");
   }
 
   if (task.assignedTo.toString() !== userId || !isProjectAdmin) {
-    throw new ApiError(HTTP_STATUS.UNAUTHORIZED, "Unauthorized! Task is not assigned to you.");
+    throw new ApiError(401, "Unauthorized! Task is not assigned to you.");
   }
 
   task.status = status;

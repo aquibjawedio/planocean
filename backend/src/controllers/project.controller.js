@@ -1,4 +1,3 @@
-import { HTTP_STATUS } from "../constants/httpStatusCodes.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import {
@@ -26,8 +25,8 @@ export const createProjectController = asyncHandler(async (req, res) => {
   });
 
   const { project, projectMember } = await createProjectService({ name, description, createdBy });
-  return res.status(HTTP_STATUS.CREATED).json(
-    new ApiResponse(HTTP_STATUS.CREATED, "Project created successfully", {
+  return res.status(201).json(
+    new ApiResponse(201, "Project created successfully", {
       project,
       projectMember,
     })
@@ -44,8 +43,8 @@ export const getAllProjectController = asyncHandler(async (req, res) => {
     $or: [{ createdBy: userId }, { _id: { $in: memberProjectIds } }],
   });
 
-  return res.status(HTTP_STATUS.OK).json(
-    new ApiResponse(HTTP_STATUS.OK, "Fetched all project associated with user successfully", {
+  return res.status(200).json(
+    new ApiResponse(200, "Fetched all project associated with user successfully", {
       projects,
       memberships,
     })
@@ -56,12 +55,12 @@ export const getProjectsCreatedByUserController = asyncHandler(async (req, res) 
   const projects = await Project.find({ createdBy: req.user._id.toString() });
 
   if (!projects) {
-    throw new ApiError(HTTP_STATUS.NOT_FOUND, "No projects found created by user");
+    throw new ApiError(404, "No projects found created by user");
   }
 
   return res
-    .status(HTTP_STATUS.OK)
-    .json(new ApiResponse(HTTP_STATUS.OK, "Fetched all projects created by user", { projects }));
+    .status(200)
+    .json(new ApiResponse(200, "Fetched all projects created by user", { projects }));
 });
 
 export const getProjectByIdController = asyncHandler(async (req, res) => {
@@ -69,11 +68,9 @@ export const getProjectByIdController = asyncHandler(async (req, res) => {
   const project = await Project.findOne({ _id: projectId });
 
   if (!project) {
-    throw new ApiError(HTTP_STATUS.NOT_FOUND, "Porject not found with this project id");
+    throw new ApiError(404, "Porject not found with this project id");
   }
-  return res
-    .status(HTTP_STATUS.OK)
-    .json(new ApiResponse(HTTP_STATUS.OK, "Project found with id", { project }));
+  return res.status(200).json(new ApiResponse(200, "Project found with id", { project }));
 });
 
 export const updateProjectController = asyncHandler(async (req, res) => {
@@ -94,8 +91,8 @@ export const updateProjectController = asyncHandler(async (req, res) => {
   });
 
   return res
-    .status(HTTP_STATUS.CREATED)
-    .json(new ApiResponse(HTTP_STATUS.CREATED, "Project updated successfully", { updatedProject }));
+    .status(201)
+    .json(new ApiResponse(201, "Project updated successfully", { updatedProject }));
 });
 
 export const addMemberController = asyncHandler(async (req, res) => {
@@ -106,9 +103,7 @@ export const addMemberController = asyncHandler(async (req, res) => {
 
   const { member } = await addMemberService({ username, projectId, role });
 
-  return res
-    .status(HTTP_STATUS.CREATED)
-    .json(new ApiResponse(HTTP_STATUS.CREATED, "Member added successfully", { member }));
+  return res.status(201).json(new ApiResponse(201, "Member added successfully", { member }));
 });
 
 export const updateMemberRoleController = asyncHandler(async (req, res) => {
@@ -119,9 +114,7 @@ export const updateMemberRoleController = asyncHandler(async (req, res) => {
 
   const { member } = await updateMemberRoleService({ username, projectId, role });
 
-  return res
-    .status(HTTP_STATUS.CREATED)
-    .json(new ApiResponse(HTTP_STATUS.CREATED, "Member role update successfully", { member }));
+  return res.status(201).json(new ApiResponse(201, "Member role update successfully", { member }));
 });
 
 export const deleteProjectController = asyncHandler(async (req, res) => {});

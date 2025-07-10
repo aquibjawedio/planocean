@@ -4,7 +4,7 @@ import jwt from "jsonwebtoken";
 // Imports from folders
 import { User } from "../models/user.model.js";
 import { ApiError } from "../utils/ApiError.js";
-import { HTTP_STATUS } from "../constants/httpStatusCodes.js";
+
 import { sanitizeUser } from "../utils/sanitizeUser.js";
 import {
   sendEmail,
@@ -15,13 +15,13 @@ import {
 export const registerUserService = async (fullname, username, email, password) => {
   const existingEmail = await User.findOne({ email });
   if (existingEmail) {
-    throw new ApiError(HTTP_STATUS.CONFLICT, "User already exists with this email");
+    throw new ApiError(409, "User already exists with this email");
   }
 
   const existingUsername = await User.findOne({ username });
 
   if (existingUsername) {
-    throw new ApiError(HTTP_STATUS.CONFLICT, "User already exists with this username");
+    throw new ApiError(409, "User already exists with this username");
   }
 
   const user = await User.create({
@@ -51,23 +51,17 @@ export const loginUserService = async (email, password) => {
 
   if (!user.isEmailVerified) {
     throw new ApiError(
-      HTTP_STATUS.BAD_REQUEST,
+      400,
       "Email is not verified. Verification link has been sent on your email."
     );
   }
   if (!user) {
-    throw new ApiError(
-      HTTP_STATUS.NOT_FOUND,
-      "Invalid credentials!. Please enter valid credentials."
-    );
+    throw new ApiError(404, "Invalid credentials!. Please enter valid credentials.");
   }
 
   const isPasswordMatched = await user.isPasswordCorrect(password);
   if (!isPasswordMatched) {
-    throw new ApiError(
-      HTTP_STATUS.BAD_REQUEST,
-      "Invalid credentials!. Please enter valid credentials."
-    );
+    throw new ApiError(400, "Invalid credentials!. Please enter valid credentials.");
   }
 
   const refreshToken = user.generateRefreshToken();
@@ -85,7 +79,7 @@ export const verifyUserEmailService = async (token) => {
   const user = await User.findOne({ emailVerificationToken: hashedToken });
 
   if (!user) {
-    throw new ApiError(HTTP_STATUS.NOT_FOUND, "Invalid or expired token.");
+    throw new ApiError(404, "Invalid or expired token.");
   }
 
   user.isEmailVerified = true;
@@ -98,11 +92,11 @@ export const verifyUserEmailService = async (token) => {
 export const resendVerificationURLService = async (email) => {
   const user = await User.findOne({ email });
   if (!user) {
-    throw new ApiError(HTTP_STATUS.NOT_FOUND, "user not found with this email");
+    throw new ApiError(404, "user not found with this email");
   }
 
   if (user.isEmailVerified) {
-    throw new ApiError(HTTP_STATUS.BAD_REQUEST, "user is already verified");
+    throw new ApiError(400, "user is already verified");
   }
 
   const { unHashedToken, hashedToken, tokenExpiry } = await user.generateTemporaryToken();
@@ -126,15 +120,12 @@ export const refreshAccessTokenService = async (refreshToken) => {
   try {
     decodedData = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
   } catch (error) {
-    throw new ApiError(
-      HTTP_STATUS.UNAUTHORIZED,
-      error.message || "Invalid or expired refresh token"
-    );
+    throw new ApiError(401, error.message || "Invalid or expired refresh token");
   }
 
   const user = await User.findById(decodedData._id);
   if (!user) {
-    throw new ApiError(HTTP_STATUS.NOT_FOUND, "User not found! Invalid refresh token");
+    throw new ApiError(404, "User not found! Invalid refresh token");
   }
 
   const newAccessToken = user.generateAccessToken();
@@ -150,7 +141,7 @@ export const forgotPasswordService = async (email) => {
   const user = await User.findOne({ email });
 
   if (!user) {
-    throw new ApiError(HTTP_STATUS.NOT_FOUND, "User not found with this email");
+    throw new ApiError(404, "User not found with this email");
   }
   const { unHashedToken, hashedToken, tokenExpiry } = await user.generateTemporaryToken();
 
@@ -174,10 +165,7 @@ export const forgotPasswordService = async (email) => {
 
 export const resetPasswordService = async ({ token, newPassword, confirmNewPassword }) => {
   if (newPassword !== confirmNewPassword) {
-    throw new ApiError(
-      HTTP_STATUS.BAD_REQUEST,
-      "New password and confirm new password must be same"
-    );
+    throw new ApiError(400, "New password and confirm new password must be same");
   }
 
   const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
@@ -187,11 +175,11 @@ export const resetPasswordService = async ({ token, newPassword, confirmNewPassw
   const user = await User.findOne({ forgotPasswordToken: hashedToken });
   console.log("user : ", user);
   if (!user) {
-    throw new ApiError(HTTP_STATUS.NOT_FOUND, "Invalid token! user not found");
+    throw new ApiError(404, "Invalid token! user not found");
   }
 
   if (Date.now() > user.forgotPasswordExpiry) {
-    throw new ApiError(HTTP_STATUS.BAD_REQUEST, "Token Expired! Please requrest for new reset url");
+    throw new ApiError(400, "Token Expired! Please requrest for new reset url");
   }
 
   user.password = newPassword;
