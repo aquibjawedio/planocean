@@ -2,6 +2,7 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import jwt from "jsonwebtoken";
 import { ApiError } from "../utils/ApiError.js";
 import { UserRolesEnum } from "../constants/user.constant.js";
+import { env } from "../config/env.js";
 
 export const isLoggedIn = asyncHandler(async (req, res, next) => {
   try {
@@ -10,7 +11,7 @@ export const isLoggedIn = asyncHandler(async (req, res, next) => {
       throw new ApiError(401, "Unauthorized! Access token missing");
     }
 
-    const decodedUser = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
+    const decodedUser = jwt.verify(token, env.ACCESS_TOKEN_SECRET);
 
     if (!decodedUser) {
       throw new ApiError(401, "Invalid access token");

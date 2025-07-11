@@ -1,9 +1,10 @@
 import { ZodError } from "zod";
 import { ApiError } from "../utils/ApiError.js";
+import { env } from "../config/env.js";
 
 export const errorHandler = (err, req, res, next) => {
   if (err instanceof ZodError) {
-    if (process.env.NODE_ENV === "development") {
+    if (env.NODE_ENV === "development") {
       console.error("ZodError:", err);
     }
 
@@ -19,7 +20,7 @@ export const errorHandler = (err, req, res, next) => {
   }
 
   if (err instanceof ApiError) {
-    if (process.env.NODE_ENV === "development") {
+    if (env.NODE_ENV === "development") {
       console.error("ApiError:", err.message);
       console.error("Stack:", err.stack);
     }
@@ -32,7 +33,7 @@ export const errorHandler = (err, req, res, next) => {
     });
   }
 
-  if (process.env.NODE_ENV === "development") {
+  if (env.NODE_ENV === "development") {
     console.error("Unhandled error:", err);
   }
 

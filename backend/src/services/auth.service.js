@@ -11,6 +11,8 @@ import {
   emailVerificationMailGenContent,
   forgotPasswordMailGenContent,
 } from "../utils/sendEmail.js";
+import { env } from "../config/env.js";
+import { cookieOptions } from "../utils/jwt.js";
 
 export const registerUserService = async (fullname, username, email, password) => {
   const existingEmail = await User.findOne({ email });
@@ -35,7 +37,7 @@ export const registerUserService = async (fullname, username, email, password) =
   user.emailVerificationToken = hashedToken;
   await user.save();
 
-  const verificationUrl = `${process.env.FRONTEND_URL}/api/v1/auth/verify-email/${unHashedToken}`;
+  const verificationUrl = `${env.FRONTEND_URL}/api/v1/auth/verify-email/${unHashedToken}`;
 
   await sendEmail({
     email,
@@ -64,13 +66,16 @@ export const loginUserService = async (email, password) => {
     throw new ApiError(400, "Invalid credentials!. Please enter valid credentials.");
   }
 
-  const refreshToken = user.generateRefreshToken();
   const accessToken = user.generateAccessToken();
+  const accessCookieOptions = cookieOptions(1000 * 60 * 15);
+
+  const refreshToken = user.generateRefreshToken();
+  const refreshCookieOptions = cookieOptions(1000 * 60 * 60 * 24 * 7);
 
   user.refreshToken = refreshToken;
   await user.save();
 
-  return { user, accessToken, refreshToken };
+  return { user, accessToken, accessCookieOptions, refreshToken, refreshCookieOptions };
 };
 
 export const verifyUserEmailService = async (token) => {
@@ -101,7 +106,7 @@ export const resendVerificationURLService = async (email) => {
 
   const { unHashedToken, hashedToken, tokenExpiry } = await user.generateTemporaryToken();
 
-  const verificationUrl = `${process.env.FRONTEND_URL}/api/v1/auth/verify-email/${unHashedToken}`;
+  const verificationUrl = `${env.FRONTEND_URL}/api/v1/auth/verify-email/${unHashedToken}`;
 
   user.emailVerificationToken = hashedToken;
   await user.save();
@@ -118,7 +123,7 @@ export const resendVerificationURLService = async (email) => {
 export const refreshAccessTokenService = async (refreshToken) => {
   let decodedData;
   try {
-    decodedData = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
+    decodedData = jwt.verify(refreshToken, env.REFRESH_TOKEN_SECRET);
   } catch (error) {
     throw new ApiError(401, error.message || "Invalid or expired refresh token");
   }
@@ -149,7 +154,7 @@ export const forgotPasswordService = async (email) => {
   user.forgotPasswordExpiry = tokenExpiry;
   await user.save();
 
-  const forgotPasswordUrl = `${process.env.FRONTEND_URL}/api/v1/auth/reset-password/${unHashedToken}`;
+  const forgotPasswordUrl = `${env.FRONTEND_URL}/api/v1/auth/reset-password/${unHashedToken}`;
 
   sendEmail({
     email,

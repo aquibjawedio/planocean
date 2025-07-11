@@ -1,0 +1,26 @@
+import dotenv from "dotenv";
+dotenv.config();
+
+const env = {
+  PORT: process.env.PORT,
+  NODE_ENV: process.env.NODE_ENV,
+  FRONTEND_URL: process.env.FRONTEND_URL,
+  BACKEND_URL: process.env.BACKEND_URL,
+  DATABASE_URL: process.env.DATABASE_URL,
+  ACCESS_TOKEN_SECRET: process.env.ACCESS_TOKEN_SECRET,
+  ACCESS_TOKEN_EXPIRY: process.env.ACCESS_TOKEN_EXPIRY,
+  REFRESH_TOKEN_SECRET: process.env.REFRESH_TOKEN_SECRET,
+  REFRESH_TOKEN_EXPIRY: process.env.REFRESH_TOKEN_EXPIRY,
+  RESEND_API_KEY: process.env.RESEND_API_KEY,
+  SENDER_EMAIL: process.env.SENDER_EMAIL,
+  MAILTRAP_HOST: process.env.MAILTRAP_HOST,
+  MAILTRAP_PORT: process.env.MAILTRAP_PORT,
+  MAILTRAP_USERNAME: process.env.MAILTRAP_USERNAME,
+  MAILTRAP_PASSWORD: process.env.MAILTRAP_PASSWORD,
+  GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
+  GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
+  SESSION_SECRET: process.env.SESSION_SECRET,
+  CALLBACK_URL: process.env.CALLBACK_URL,
+};
+
+export { env };

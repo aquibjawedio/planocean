@@ -21,6 +21,8 @@ import {
 } from "../services/auth.service.js";
 import { ApiError } from "../utils/ApiError.js";
 import { sanitizeUser } from "../utils/sanitizeUser.js";
+import { env } from "../config/env.js";
+import { clearCookieOptions } from "../utils/jwt.js";
 
 export const registerUserController = asyncHandler(async (req, res) => {
   const { fullname, username, email, password } = registerUserSchema.parse(req.body);
@@ -37,48 +39,27 @@ export const loginUserController = asyncHandler(async (req, res) => {
   }
   const { email, password } = loginUserSchema.parse(req.body);
 
-  const { user, accessToken, refreshToken } = await loginUserService(email, password);
-
-  const refreshCookieOptions = {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    samesite: process.env.NODE_ENV === "production" ? "none" : "lax",
-    maxAge: 1000 * 60 * 60 * 24 * 7,
-  };
-  const accessCookieOptions = {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    samesite: process.env.NODE_ENV === "production" ? "none" : "lax",
-    maxAge: 1000 * 60 * 15,
-  };
-
-  res.cookie("refreshToken", refreshToken, refreshCookieOptions);
-  res.cookie("accessToken", accessToken, accessCookieOptions);
+  const { user, accessToken, accessCookieOptions, refreshToken, refreshCookieOptions } =
+    await loginUserService(email, password);
 
   return res
     .status(200)
-    .json(new ApiResponse(200, "User loggedin successfully", { user, accessToken }));
+    .cookie("refreshToken", refreshToken, refreshCookieOptions)
+    .cookie("accessToken", accessToken, accessCookieOptions)
+    .json(new ApiResponse(200, "User loggedin successfully", { user: sanitizeUser(user) }));
 });
 
 export const logoutUserController = asyncHandler(async (req, res) => {
   const token = req.cookies?.refreshToken;
+
   if (!token) {
     throw new ApiError(400, "User is already logged out");
   }
 
-  res.clearCookie("refreshToken", {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    samesite: process.env.NODE_ENV === "production" ? "none" : "lax",
-    maxAge: 1000 * 60 * 60 * 24 * 7,
-  });
+  const options = clearCookieOptions();
 
-  res.clearCookie("accessToken", {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    samesite: process.env.NODE_ENV === "production" ? "none" : "lax",
-    maxAge: 1000 * 60 * 60 * 24 * 7,
-  });
+  res.clearCookie("refreshToken", options);
+  res.clearCookie("accessToken", options);
 
   res.status(200).json(new ApiResponse(200, "User logged out successfully"));
 });
@@ -121,15 +102,15 @@ export const refreshAccessTokenController = asyncHandler(async (req, res) => {
 
   res.cookie("accessToken", newAccessToken, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    samesite: process.env.NODE_ENV === "production" ? "none" : "lax",
+    secure: env.NODE_ENV === "production",
+    samesite: env.NODE_ENV === "production" ? "none" : "lax",
     maxAge: 1000 * 60 * 15,
   });
 
   res.cookie("refreshToken", newRefreshToken, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+    secure: env.NODE_ENV === "production",
+    sameSite: env.NODE_ENV === "production" ? "none" : "lax",
     maxAge: 1000 * 60 * 60 * 24 * 7,
   });
 
@@ -184,14 +165,14 @@ export const googleOAuthSuccessController = asyncHandler(async (req, res) => {
 
   const refreshCookieOptions = {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+    secure: env.NODE_ENV === "production",
+    sameSite: env.NODE_ENV === "production" ? "none" : "lax",
     maxAge: 1000 * 60 * 60 * 24 * 7,
   };
   const accessCookieOptions = {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+    secure: env.NODE_ENV === "production",
+    sameSite: env.NODE_ENV === "production" ? "none" : "lax",
     maxAge: 1000 * 60 * 15,
   };
 

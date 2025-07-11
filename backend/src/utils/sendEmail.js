@@ -3,6 +3,7 @@ import Mailgen from "mailgen";
 import { mailtrapTransporter } from "../config/mailtrapMailer.js";
 import { resendTransporter } from "../config/resendMailer.js";
 import { ApiError } from "./ApiError.js";
+import { env } from "../config/env.js";
 
 export const sendEmail = async ({ email, subject, mailGenContent }) => {
   const mailGenerator = new Mailgen({
@@ -17,12 +18,12 @@ export const sendEmail = async ({ email, subject, mailGenContent }) => {
   const emailHTML = mailGenerator.generate(mailGenContent);
   const emailText = mailGenerator.generatePlaintext(mailGenContent);
 
-  const env = process.env.NODE_ENV?.trim().toLowerCase();
+  const env = env.NODE_ENV?.trim().toLowerCase();
 
   try {
     if (env === "development") {
       const info = await mailtrapTransporter.sendMail({
-        from: process.env.SENDER_EMAIL,
+        from: env.SENDER_EMAIL,
         to: email,
         subject,
         text: emailText,
@@ -35,7 +36,7 @@ export const sendEmail = async ({ email, subject, mailGenContent }) => {
       }
     } else {
       const response = await resendTransporter.emails.send({
-        from: process.env.SENDER_EMAIL,
+        from: env.SENDER_EMAIL,
         to: email,
         subject,
         text: emailText,
