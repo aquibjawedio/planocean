@@ -25,6 +25,7 @@
     "passport": "^0.7.0",
     "passport-google-oauth20": "^2.0.0",
     "resend": "^4.6.0",
+    "winston": "^3.17.0",
     "zod": "^3.25.61"
   },
   "devDependencies": {

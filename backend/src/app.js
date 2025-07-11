@@ -48,7 +48,7 @@ app.use(passport.session());
 connectDB();
 
 // Routes configuration
-app.use("/api/v1/healthcheck", healthCheckRouter);
+app.use("/api/v1/health", healthCheckRouter);
 app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/user", userRouter);
 app.use("/api/v1/admin", adminRouter);

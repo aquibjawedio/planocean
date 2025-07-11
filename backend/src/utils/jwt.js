@@ -21,6 +21,7 @@ export const clearCookieOptions = () => {
 export const verifyJWTRefreshToken = (refreshToken) => {
   return jwt.verify(refreshToken, env.REFRESH_TOKEN_SECRET);
 };
+
 export const verifyJWTAccessToken = (accessToken) => {
   return jwt.verify(accessToken, env.ACCESS_TOKEN_SECRET);
 };
