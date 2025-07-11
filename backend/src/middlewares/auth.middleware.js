@@ -5,11 +5,11 @@ import { verifyJWTAccessToken } from "../utils/jwt.js";
 
 export const isLoggedIn = asyncHandler(async (req, res, next) => {
   try {
-    const token = req.cookies?.accessToken || req.headers.authorization?.split(" ")[1];
-    if (!token) {
+    const accessToken = req.cookies?.accessToken || req.headers.authorization?.split(" ")[1];
+    if (!accessToken) {
       throw new ApiError(401, "Unauthorized! Access token missing");
     }
-    
+
     const decodedUser = verifyJWTAccessToken(accessToken);
 
     if (!decodedUser) {
