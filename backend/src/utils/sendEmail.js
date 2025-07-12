@@ -18,10 +18,10 @@ export const sendEmail = async ({ email, subject, mailGenContent }) => {
   const emailHTML = mailGenerator.generate(mailGenContent);
   const emailText = mailGenerator.generatePlaintext(mailGenContent);
 
-  const env = env.NODE_ENV?.trim().toLowerCase();
+  const nodeEnv = env.NODE_ENV?.trim().toLowerCase();
 
   try {
-    if (env === "development") {
+    if (nodeEnv === "development") {
       const info = await mailtrapTransporter.sendMail({
         from: env.SENDER_EMAIL,
         to: email,
@@ -64,10 +64,10 @@ export const emailVerificationMailGenContent = (fullname, verificationUrl) => ({
     name: fullname,
     intro: "Welcome to PlanOcean! We're very excited to have you on board.",
     action: {
-      instructions: "To get started, please verify your email:",
+      instructions: "Please verify your email to continue with PlanOcean.",
       button: {
-        color: "#22BC66",
-        text: "Verify your email",
+        color: "#15181cff",
+        text: "Verify Email",
         link: verificationUrl,
       },
     },

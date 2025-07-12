@@ -21,13 +21,12 @@ authRouter.route("/register").post(registerUserController);
 authRouter.route("/login").post(loginUserController);
 authRouter.route("/verify-email/:token").get(verifyUserEmailController);
 authRouter.route("/resend-email").post(resendVerificationURLController);
-authRouter.route("/refresh-access-token").post(refreshAccessTokenController);
+authRouter.route("/refresh-token").post(refreshAccessTokenController);
 authRouter.route("/forgot-password").post(forgotPasswordController);
 authRouter.route("/reset-password/:token").post(resetPasswordController);
 
 // Login Only Routes
 authRouter.route("/logout").post(isLoggedIn, logoutUserController);
-
 
 // Google Auth Routes
 authRouter.route("/google").get(passport.authenticate("google", { scope: ["profile", "email"] }));

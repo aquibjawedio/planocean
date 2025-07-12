@@ -7,18 +7,18 @@ import passport from "passport";
 // Imports from folders
 import { connectDB } from "./config/connectDB.js";
 import "./config/passport.js";
+import { errorHandler } from "./middlewares/error.middleware.js";
+import { env } from "./config/env.js";
 
 // Importing all routes here
 import { healthCheckRouter } from "./routes/healthcheck.route.js";
 import { authRouter } from "./routes/auth.route.js";
-import { errorHandler } from "./middlewares/error.middleware.js";
 import { projectRouter } from "./routes/project.route.js";
 import { projectNoteRouter } from "./routes/projectnote.route.js";
 import { taskRouter } from "./routes/task.route.js";
 import { userRouter } from "./routes/user.route.js";
 import { adminRouter } from "./routes/admin.route.js";
 import { subtaskRouter } from "./routes/subtask.route.js";
-import { env } from "./config/env.js";
 
 const app = express();
 
@@ -27,7 +27,7 @@ app.use(
   cors({
     origin: env.FRONTEND_URL,
     credentials: true,
-    methods: ["GET", "POST", "DELETE", "PUT"],
+    methods: ["GET", "POST", "DELETE", "PUT", "PATCH"],
     allowedHeaders: ["Content-Type", "Authorization"],
   })
 );

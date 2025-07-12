@@ -1,6 +1,7 @@
 import {
   forgotPasswordSchema,
   loginUserSchema,
+  logoutUserSchema,
   registerUserSchema,
   resendVerificationURLSchema,
   resetPasswordSchema,
@@ -13,6 +14,7 @@ import {
   forgotPasswordService,
   loginUserService,
   loginWithGoogleService,
+  logoutUserService,
   refreshAccessTokenService,
   registerUserService,
   resendVerificationURLService,
@@ -22,7 +24,7 @@ import {
 import { ApiError } from "../utils/ApiError.js";
 import { sanitizeUser } from "../utils/sanitizeUser.js";
 import { env } from "../config/env.js";
-import { clearCookieOptions } from "../utils/jwt.js";
+import { logger } from "../utils/logger.js";
 
 export const registerUserController = asyncHandler(async (req, res) => {
   const { fullname, username, email, password } = registerUserSchema.parse(req.body);
@@ -34,7 +36,7 @@ export const registerUserController = asyncHandler(async (req, res) => {
 
 export const loginUserController = asyncHandler(async (req, res) => {
   if (req.cookies?.refreshToken) {
-    console.log(req.cookies?.refreshToken);
+    logger.warn("User is already logged in, cannot login again");
     throw new ApiError(400, "User is already loggedin");
   }
   const { email, password } = loginUserSchema.parse(req.body);
@@ -46,22 +48,21 @@ export const loginUserController = asyncHandler(async (req, res) => {
     .status(200)
     .cookie("refreshToken", refreshToken, refreshCookieOptions)
     .cookie("accessToken", accessToken, accessCookieOptions)
-    .json(new ApiResponse(200, "User loggedin successfully", { user: sanitizeUser(user) }));
+    .json(new ApiResponse(200, "User loggedin successfully", { user }));
 });
 
 export const logoutUserController = asyncHandler(async (req, res) => {
-  const token = req.cookies?.refreshToken;
+  const { token } = logoutUserSchema.parse({ token: req.cookies?.refreshToken });
 
-  if (!token) {
-    throw new ApiError(400, "User is already logged out");
-  }
-
-  const options = clearCookieOptions();
+  const options = await logoutUserService(token);
 
   res.clearCookie("refreshToken", options);
   res.clearCookie("accessToken", options);
 
-  res.status(200).json(new ApiResponse(200, "User logged out successfully"));
+  logger.info(`Logout successful: All cookies cleared for user - ${req.user}`);
+  res
+    .status(200)
+    .json(new ApiResponse(200, "User logged out successfully", { user: sanitizeUser(req.user) }));
 });
 
 export const verifyUserEmailController = asyncHandler(async (req, res) => {
@@ -70,10 +71,8 @@ export const verifyUserEmailController = asyncHandler(async (req, res) => {
   if (!token) {
     throw new ApiError(404, "Token not found");
   }
-  const { user, verified } = await verifyUserEmailService(token);
-  res
-    .status(200)
-    .json(new ApiResponse(200, "User email verification successfull", { user, verified }));
+  const user = await verifyUserEmailService(token);
+  res.status(200).json(new ApiResponse(200, "User email verification successfull", { user }));
 });
 
 export const resendVerificationURLController = asyncHandler(async (req, res) => {
@@ -82,7 +81,7 @@ export const resendVerificationURLController = asyncHandler(async (req, res) => 
   const user = await resendVerificationURLService(email);
 
   return res.status(200).json(
-    new ApiResponse(200, "Email resend successfully. Please check spam folder", {
+    new ApiResponse(200, "Email sent successfully, please check your inbox or spam folder", {
       user,
     })
   );

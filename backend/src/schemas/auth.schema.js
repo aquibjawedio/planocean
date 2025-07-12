@@ -12,6 +12,10 @@ export const loginUserSchema = z.object({
   password: z.string().min(8, { message: "Password must be at least 6 characters long." }),
 });
 
+export const logoutUserSchema = z.object({
+  token: z.string().trim().min(1, "Refresh token is missing"),
+});
+
 export const verifyUserEmailSchema = z.object({
   token: z.string().min(1, "Token is required"),
 });
