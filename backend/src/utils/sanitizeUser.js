@@ -8,6 +8,9 @@ const sanitizeUser = ({
   updatedAt,
   avatarUrl,
   isEmailVerified,
+  bio = "",
+  location = "",
+  socialLinks = {},
 }) => {
   if (!_id) return null;
 
@@ -21,6 +24,15 @@ const sanitizeUser = ({
     updatedAt,
     avatarUrl,
     isEmailVerified,
+    bio,
+    location,
+    socialLinks: {
+      twitter: socialLinks.twitter || "",
+      linkedin: socialLinks.linkedin || "",
+      github: socialLinks.github || "",
+      instagram: socialLinks.instagram || "",
+      website: socialLinks.website || "",
+    },
   };
 };
 
