@@ -7,21 +7,17 @@ export const getCurrentUserSchema = z.object({
 export const updateUserProfileSchema = z.object({
   fullname: z.string().trim().min(1, "Full name is required"),
   username: z.string().trim().min(1, "Username is required"),
-  avatarUrl: z
-    .object({
-      url: z.string().url("Invalid URL format").optional(),
-      localpath: z.string().optional(),
-    })
-    .optional(),
   bio: z.string().trim().optional(),
   location: z.string().trim().optional(),
-  socialLinks: z.object({
-    twitter: z.string().trim().optional(),
-    linkedin: z.string().trim().optional(),
-    github: z.string().trim().optional(),
-    instagram: z.string().trim().optional(),
-    website: z.string().trim().optional(),
-  }),
+  socialLinks: z
+    .object({
+      twitter: z.string().trim().optional(),
+      linkedin: z.string().trim().optional(),
+      github: z.string().trim().optional(),
+      instagram: z.string().trim().optional(),
+      website: z.string().trim().optional(),
+    })
+    .optional(),
   userId: z.string().trim().min(1, "User id is required"),
 });
 

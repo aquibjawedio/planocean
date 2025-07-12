@@ -35,14 +35,9 @@ const userSchema = new Schema(
       default: "user",
     },
     avatarUrl: {
-      type: {
-        url: String,
-        localpath: String,
-      },
-      default: {
-        url: `https://placehold.co/400`,
-        localpath: "",
-      },
+      type: String,
+      trim: true,
+      default: "https://placehold.co/400",
     },
     bio: {
       type: String,

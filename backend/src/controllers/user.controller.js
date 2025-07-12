@@ -12,6 +12,7 @@ import {
 } from "../services/user.service.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
+import { uploadOnCloudinary } from "../utils/cloudinary.js";
 
 export const getCurrentUserController = asyncHandler(async (req, res) => {
   const { userId } = getCurrentUserSchema.parse({ userId: req.user._id });
@@ -23,16 +24,18 @@ export const getCurrentUserController = asyncHandler(async (req, res) => {
 });
 
 export const updateUserProfileController = asyncHandler(async (req, res) => {
-  const { fullname, username, avatarUrl, bio, location, userId, socialLinks } =
+  const { fullname, username, bio, location, userId, socialLinks } =
     updateUserProfileSchema.parse({
       ...req.body,
       userId: req.user._id,
     });
 
+  const url = await uploadOnCloudinary(req.file.path);
+
   const user = await updateUserProfileService({
     fullname,
     username,
-    avatarUrl,
+    avatarUrl: url,
     bio,
     location,
     socialLinks,
