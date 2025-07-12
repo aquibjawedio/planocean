@@ -82,7 +82,7 @@ export const forgotPasswordMailGenContent = (fullname, forgotPasswordUrl) => ({
     action: {
       instructions: "Click the button below to reset your password:",
       button: {
-        color: "#22BC66",
+        color: "#15181cff",
         text: "Reset Password",
         link: forgotPasswordUrl,
       },

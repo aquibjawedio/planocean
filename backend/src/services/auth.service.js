@@ -12,7 +12,7 @@ import {
   forgotPasswordMailGenContent,
 } from "../utils/sendEmail.js";
 import { env } from "../config/env.js";
-import { clearCookieOptions, cookieOptions } from "../utils/jwt.js";
+import { clearCookieOptions, cookieOptions, verifyJWTRefreshToken } from "../utils/jwt.js";
 import { logger } from "../utils/logger.js";
 import { sendEmailVerificationLink } from "../utils/emailVerification.js";
 
@@ -151,40 +151,58 @@ export const resendVerificationURLService = async (email) => {
 };
 
 export const refreshAccessTokenService = async (refreshToken) => {
-  let decodedData;
-  try {
-    decodedData = jwt.verify(refreshToken, env.REFRESH_TOKEN_SECRET);
-  } catch (error) {
-    throw new ApiError(401, error.message || "Invalid or expired refresh token");
+  logger.info(`Attempt to refresh token: Decoding data - ${refreshToken}`);
+  const decodedData = verifyJWTRefreshToken(refreshToken);
+
+  if (!decodedData) {
+    logger.warn(`Refresh token failed : Invalid refresh token - ${refreshToken}`);
+    throw new ApiError(401, "Decoded data not found, Refresh token missing");
   }
 
   const user = await User.findById(decodedData._id);
   if (!user) {
+    logger.warn(`Refresh token failed : User not found with this decoded data - ${decodedData}`);
     throw new ApiError(404, "User not found! Invalid refresh token");
   }
 
+  logger.info(`User found : Now generating access and refresh token for - ${user.email}`);
+
   const newAccessToken = user.generateAccessToken();
+  const accessCookieOptions = cookieOptions(1000 * 60 * 15);
   const newRefreshToken = user.generateRefreshToken();
+  const refreshCookieOptions = cookieOptions(1000 * 60 * 60 * 24 * 7);
 
   user.refreshToken = newRefreshToken;
   await user.save();
 
-  return { user, newAccessToken, newRefreshToken };
+  logger.info(`Acess and Refresh token generated and saved in db - ${user.email}`);
+  return {
+    user: sanitizeUser(user),
+    newAccessToken,
+    accessCookieOptions,
+    newRefreshToken,
+    refreshCookieOptions,
+  };
 };
 
 export const forgotPasswordService = async (email) => {
+  logger.info(`Attemp to request forgot password - ${email}`);
+
   const user = await User.findOne({ email });
 
   if (!user) {
+    logger.warn(`Forgot password failed : User not found - ${email}`);
     throw new ApiError(404, "User not found with this email");
   }
+
+  logger.info(`User found : Generating tokens for forgot password ${email}`);
   const { unHashedToken, hashedToken, tokenExpiry } = await user.generateTemporaryToken();
 
   user.forgotPasswordToken = hashedToken;
   user.forgotPasswordExpiry = tokenExpiry;
   await user.save();
 
-  const forgotPasswordUrl = `${env.FRONTEND_URL}/api/v1/auth/reset-password/${unHashedToken}`;
+  const forgotPasswordUrl = `${env.FRONTEND_URL}/auth/forgot-password/${unHashedToken}`;
 
   sendEmail({
     email,
@@ -192,37 +210,39 @@ export const forgotPasswordService = async (email) => {
     mailGenContent: forgotPasswordMailGenContent(user.fullname, forgotPasswordUrl),
   });
 
-  return {
-    user: sanitizeUser(user),
-    urlWillExpire: user.forgotPasswordExpiry,
-  };
+  logger.info(`Forgot password request successfull : Email sent to ${email} `);
+
+  return sanitizeUser(user);
 };
 
 export const resetPasswordService = async ({ token, newPassword, confirmNewPassword }) => {
   if (newPassword !== confirmNewPassword) {
+    logger.warn("Reset password failed : New password and confirm password do not match");
     throw new ApiError(400, "New password and confirm new password must be same");
   }
 
+  logger.info(`Attempt to reset password with token - ${token}`);
   const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
 
-  console.log("token : ", hashedToken);
-
   const user = await User.findOne({ forgotPasswordToken: hashedToken });
-  console.log("user : ", user);
   if (!user) {
+    logger.warn(`Reset password failed : User not found with token - ${token}`);
     throw new ApiError(404, "Invalid token! user not found");
   }
 
-  if (Date.now() > user.forgotPasswordExpiry) {
+  if (!user.forgotPasswordExpiry || new Date(user.forgotPasswordExpiry) < new Date()) {
+    logger.warn(`Reset password failed : Token expired for user - ${user.email}`);
     throw new ApiError(400, "Token Expired! Please requrest for new reset url");
   }
 
   user.password = newPassword;
   user.forgotPasswordToken = null;
-  user.forgotPasswordExpiry = Date.now();
+  user.forgotPasswordExpiry = null;
   await user.save();
 
-  return { user, resetStatus: true };
+  logger.info(`Password reset successful for user - ${user.email}`);
+
+  return sanitizeUser(user);
 };
 
 export const handleGoogleOAuthUserService = async (profile) => {

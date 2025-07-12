@@ -2,6 +2,7 @@ import {
   forgotPasswordSchema,
   loginUserSchema,
   logoutUserSchema,
+  refreshAccessTokenSchema,
   registerUserSchema,
   resendVerificationURLSchema,
   resetPasswordSchema,
@@ -88,47 +89,34 @@ export const resendVerificationURLController = asyncHandler(async (req, res) => 
 });
 
 export const refreshAccessTokenController = asyncHandler(async (req, res) => {
-  const refreshToken = req.cookies?.refreshToken || req.body.refreshToken;
-  if (!refreshToken) {
-    throw new ApiError(401, "Unauthorized! Refresh token is missing");
-  }
-
-  const { user, newAccessToken, newRefreshToken } = await refreshAccessTokenService(refreshToken);
-
-  if (!user) {
-    throw new ApiError(401, "User not found");
-  }
-
-  res.cookie("accessToken", newAccessToken, {
-    httpOnly: true,
-    secure: env.NODE_ENV === "production",
-    samesite: env.NODE_ENV === "production" ? "none" : "lax",
-    maxAge: 1000 * 60 * 15,
+  const { refreshToken } = refreshAccessTokenSchema.parse({
+    refreshToken: req.cookies?.refreshToken,
   });
 
-  res.cookie("refreshToken", newRefreshToken, {
-    httpOnly: true,
-    secure: env.NODE_ENV === "production",
-    sameSite: env.NODE_ENV === "production" ? "none" : "lax",
-    maxAge: 1000 * 60 * 60 * 24 * 7,
-  });
+  const { user, newAccessToken, accessCookieOptions, newRefreshToken, refreshCookieOptions } =
+    await refreshAccessTokenService(refreshToken);
 
-  res.status(200).json(
-    new ApiResponse(200, "Access token refresh successfully", {
-      accessToken: newAccessToken,
-    })
-  );
+  logger.info(`Access token and Refresh token refreshed successfully for ${user.email}`);
+
+  res
+    .status(200)
+    .cookie("refreshToken", newRefreshToken, refreshCookieOptions)
+    .cookie("accessToken", newAccessToken, accessCookieOptions)
+    .json(
+      new ApiResponse(200, "Access token refresh successfully", {
+        user,
+      })
+    );
 });
 
 export const forgotPasswordController = asyncHandler(async (req, res) => {
   const { email } = forgotPasswordSchema.parse(req.body);
 
-  const { user, urlWillExpire } = await forgotPasswordService(email);
+  const user = await forgotPasswordService(email);
 
   return res.status(200).json(
-    new ApiResponse(200, "Link sent on your email to reset your new password", {
+    new ApiResponse(200, "Please reset your password with link sent on your email", {
       user,
-      urlWillExpire,
     })
   );
 });
@@ -139,7 +127,7 @@ export const resetPasswordController = asyncHandler(async (req, res) => {
     token: req.params?.token,
   });
 
-  const { user, resetStatus } = await resetPasswordService({
+  const user = await resetPasswordService({
     token,
     newPassword,
     confirmNewPassword,
@@ -148,7 +136,6 @@ export const resetPasswordController = asyncHandler(async (req, res) => {
   return res.status(200).json(
     new ApiResponse(200, "User password reset successfull", {
       user,
-      resetStatus,
     })
   );
 });
