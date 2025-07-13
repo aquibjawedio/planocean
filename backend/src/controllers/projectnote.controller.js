@@ -1,63 +1,94 @@
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
-import { createProjectNoteSchema } from "../schemas/projectnote.schema.js";
-import { createProjectNoteService } from "../services/projectnote.service.js";
-import { ProjectNote } from "../models/projectnote.model.js";
-import { ApiError } from "../utils/ApiError.js";
+import {
+  createProjectNoteSchema,
+  deleteProjectNoteSchema,
+  getAllProjectNoteSchema,
+  getProjectNoteByIdSchema,
+  updateProjectNoteSchema,
+} from "../schemas/projectnote.schema.js";
+import {
+  createProjectNoteService,
+  deleteProjectNoteService,
+  getAllProjectNoteService,
+  getProjectNoteByIdService,
+  updateProjectNoteService,
+} from "../services/projectnote.service.js";
 
 export const createProjectNoteController = asyncHandler(async (req, res) => {
   const { content, project, createdBy } = createProjectNoteSchema.parse({
     ...req.body,
+    project: req.params.projectId,
     createdBy: req.user?._id.toString(),
   });
 
-  const { projectNote } = await createProjectNoteService({ content, project, createdBy });
+  const projectNote = await createProjectNoteService({ content, project, createdBy });
   return res.status(201).json(
-    new ApiResponse(201, "Note create successfully", {
+    new ApiResponse(201, "Project Note create successfully", {
       projectNote,
     })
   );
 });
 
-export const getProjectNoteController = asyncHandler(async (req, res) => {
-  const projectId = req.params.projectId;
-  const projectNote = await ProjectNote.findOne({
-    createdBy: req.user._id.toString(),
-    project: projectId,
+export const getAllProjectNoteController = asyncHandler(async (req, res) => {
+  const { projectId } = getAllProjectNoteSchema.parse({ projectId: req.params.projectId });
+
+  const notes = await getAllProjectNoteService(projectId);
+
+  return res.status(200).json(
+    new ApiResponse(200, "Project Notes fetched successfully", {
+      notes,
+    })
+  );
+});
+
+export const getProjectNoteByIdController = asyncHandler(async (req, res) => {
+  const { projectId, noteId } = getProjectNoteByIdSchema.parse({
+    projectId: req.params.projectId,
+    noteId: req.params.noteId,
   });
 
-  if (!projectNote) {
-    throw new ApiError(404, "Project note not found for this project");
-  }
+  const note = await getProjectNoteByIdService(projectId, noteId);
 
-  return res
-    .status(200)
-    .json(new ApiResponse(200, "Project Note fetched successfully", { projectNote }));
+  return res.status(200).json(
+    new ApiResponse(200, "Project Note fetched successfully", {
+      note,
+    })
+  );
 });
 
 export const updateProjectNoteController = asyncHandler(async (req, res) => {
-  const { content, project, createdBy } = createProjectNoteSchema.parse({
+  const { content, noteId } = updateProjectNoteSchema.parse({
     ...req.body,
-    createdBy: req.user?._id.toString(),
-    project: req.params.projectId,
+    noteId: req.params.noteId,
   });
 
-  const updation = await ProjectNote.updateOne({ project, createdBy }, { $set: { content } });
-
-  if (!updation) {
-    throw new ApiError(404, "Project note not found for this project");
-  }
-
-  const projectNote = await ProjectNote.findOne({ createdBy, project });
-
-  if (!projectNote) {
-    throw new ApiError(404, "Project Note not found for this project");
-  }
+  const note = await updateProjectNoteService({ content, noteId });
 
   return res.status(200).json(
     new ApiResponse(200, "Project Note updated successfully", {
-      updation,
-      projectNote,
+      note,
+    })
+  );
+});
+
+export const deleteProjectNoteController = asyncHandler(async (req, res) => {
+  const { projectId, noteId, createdBy } = deleteProjectNoteSchema.parse({
+    projectId: req.params.projectId,
+    noteId: req.params.noteId,
+    createdBy: req.user?._id.toString(),
+  });
+
+  const note = await deleteProjectNoteService({
+    projectId,
+    noteId,
+    createdBy,
+    role: req.membership.role,
+  });
+
+  return res.status(200).json(
+    new ApiResponse(200, "Project Note deleted successfully", {
+      note,
     })
   );
 });

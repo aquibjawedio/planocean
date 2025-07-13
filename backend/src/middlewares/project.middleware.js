@@ -46,7 +46,7 @@ export const isProjectMember = asyncHandler(async (req, res, next) => {
     throw new ApiError(403, "Access Denied! You are not a member of this project");
   }
 
-  if (membership.role !== UserRolesEnum.MEMBER || membership.role !== UserRolesEnum.PROJECT_ADMIN) {
+  if (membership.role !== UserRolesEnum.MEMBER && membership.role !== UserRolesEnum.PROJECT_ADMIN) {
     logger.error("Access Denied! User is not a project member");
     throw new ApiError(403, "Access Denied! You are not a project member.");
   }
