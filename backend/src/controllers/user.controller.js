@@ -1,11 +1,13 @@
 import {
   getCurrentUserSchema,
+  updateUserAvatarSchema,
   updateUserEmailSchema,
   updateUserPasswordSchema,
   updateUserProfileSchema,
 } from "../schemas/user.schema.js";
 import {
   getCurrentUserService,
+  updateUserAvatarService,
   updateUserEmailService,
   updateUserPasswordService,
   updateUserProfileService,
@@ -23,19 +25,27 @@ export const getCurrentUserController = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, "Current user data fetched successfully", { user }));
 });
 
-export const updateUserProfileController = asyncHandler(async (req, res) => {
-  const { fullname, username, bio, location, userId, socialLinks } =
-    updateUserProfileSchema.parse({
-      ...req.body,
-      userId: req.user._id,
-    });
-
+export const updatedUserAvatarController = asyncHandler(async (req, res) => {
   const url = await uploadOnCloudinary(req.file.path);
+  const { userId } = updateUserAvatarSchema.parse({
+    userId: req.user._id,
+  });
+  const user = await updateUserAvatarService({
+    userId,
+    avatarUrl: url,
+  });
+  return res.status(200).json(new ApiResponse(200, "User avatar updated successfully", { user }));
+});
+
+export const updateUserProfileController = asyncHandler(async (req, res) => {
+  const { fullname, username, bio, location, userId, socialLinks } = updateUserProfileSchema.parse({
+    ...req.body,
+    userId: req.user._id,
+  });
 
   const user = await updateUserProfileService({
     fullname,
     username,
-    avatarUrl: url,
     bio,
     location,
     socialLinks,

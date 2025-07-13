@@ -17,6 +17,28 @@ export const getCurrentUserService = async (userId) => {
   return sanitizeUser(user);
 };
 
+export const updateUserAvatarService = async ({ userId, avatarUrl }) => {
+  logger.info(`Attempt to update user avatar: User id - ${userId}`);
+  const user = await User.findById(userId);
+
+  if (!user) {
+    logger.warn(`Failed to update user avatar: User doesn't exists with id - ${userId}`);
+    throw new ApiError(404, "User not found, Invalid user id");
+  }
+
+  user.avatarUrl = avatarUrl;
+  const updatedUser = await user.save();
+
+  if (!updatedUser) {
+    logger.warn(`Failed to update user avatar: User doesn't exists with id - ${userId}`);
+    throw new ApiError(404, "User not found, Invalid user id");
+  }
+
+  logger.info(`User avatar updated successfully: User id - ${userId}`);
+
+  return sanitizeUser(updatedUser);
+};
+
 export const updateUserProfileService = async ({
   fullname,
   username,

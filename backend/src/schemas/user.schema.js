@@ -4,6 +4,10 @@ export const getCurrentUserSchema = z.object({
   userId: z.string().trim().min(1, "User id is required"),
 });
 
+export const updateUserAvatarSchema = z.object({
+  userId: z.string().trim().min(1, "User id is required"),
+});
+
 export const updateUserProfileSchema = z.object({
   fullname: z.string().trim().min(1, "Full name is required"),
   username: z.string().trim().min(1, "Username is required"),
