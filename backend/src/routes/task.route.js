@@ -8,7 +8,7 @@ import {
   updatedTaskStatusController,
   updateTaskController,
 } from "../controllers/task.controller.js";
-import { isProjectAdmin, isProjectMember } from "../middlewares/subtask.middleware.js";
+import { isProjectAdmin, isProjectMember } from "../middlewares/project.middleware.js";
 
 const taskRouter = Router();
 

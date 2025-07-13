@@ -1,4 +1,4 @@
-import { isProjectAdmin } from "../middlewares/subtask.middleware.js";
+import { isProjectAdmin } from "../middlewares/project.middleware.js";
 import { Task } from "../models/task.model.js";
 import { ApiError } from "../utils/ApiError.js";
 

@@ -1,21 +1,27 @@
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import {
-  addMemberSchema,
+  addProjectMemberSchema,
   createProjectSchema,
+  deleteProjectSchema,
+  getAllProjectMembersSchema,
+  getAllProjectsSchema,
   getProjectByIdSchema,
+  removeProjectMemberSchema,
   updateMemberRoleSchema,
   updateProjectSchema,
 } from "../schemas/project.schema.js";
 import {
-  addMemberService,
+  addProjectMemberService,
   createProjectService,
+  deleteProjectService,
+  getAllProjectMembersService,
+  getAllProjectsService,
+  getProjectByIdService,
+  removeProjectMemberService,
   updateMemberRoleService,
   updateProjectService,
 } from "../services/project.service.js";
-import { Project } from "../models/project.model.js";
-import { ApiError } from "../utils/ApiError.js";
-import { ProjectMember } from "../models/projectmember.model.js";
 
 export const createProjectController = asyncHandler(async (req, res) => {
   const userId = req.user?._id.toString();
@@ -33,61 +39,38 @@ export const createProjectController = asyncHandler(async (req, res) => {
   );
 });
 
-export const getAllProjectController = asyncHandler(async (req, res) => {
-  const userId = req.user._id.toString();
+export const getAllProjectsController = asyncHandler(async (req, res) => {
+  const { userId } = getAllProjectsSchema.parse({ userId: req.user._id.toString() });
 
-  const memberships = await ProjectMember.find({ user: userId });
-  const memberProjectIds = memberships.map((m) => m.project.toString());
-
-  const projects = await Project.find({
-    $or: [{ createdBy: userId }, { _id: { $in: memberProjectIds } }],
-  });
+  const projects = await getAllProjectsService(userId);
 
   return res.status(200).json(
     new ApiResponse(200, "Fetched all project associated with user successfully", {
       projects,
-      memberships,
     })
   );
 });
 
-export const getProjectsCreatedByUserController = asyncHandler(async (req, res) => {
-  const projects = await Project.find({ createdBy: req.user._id.toString() });
-
-  if (!projects) {
-    throw new ApiError(404, "No projects found created by user");
-  }
-
-  return res
-    .status(200)
-    .json(new ApiResponse(200, "Fetched all projects created by user", { projects }));
-});
-
 export const getProjectByIdController = asyncHandler(async (req, res) => {
   const { projectId } = getProjectByIdSchema.parse({ projectId: req.params?.projectId });
-  const project = await Project.findOne({ _id: projectId });
 
-  if (!project) {
-    throw new ApiError(404, "Porject not found with this project id");
-  }
-  return res.status(200).json(new ApiResponse(200, "Project found with id", { project }));
+  const project = await getProjectByIdService(projectId);
+
+  return res.status(200).json(new ApiResponse(200, "Project fetched successfully  ", { project }));
 });
 
 export const updateProjectController = asyncHandler(async (req, res) => {
-  const userId = req.user?._id.toString();
   const id = req.params?.projectId;
 
-  const { projectId, name, description, createdBy } = updateProjectSchema.parse({
+  const { projectId, name, description } = updateProjectSchema.parse({
     projectId: id,
     ...req.body,
-    createdBy: userId,
   });
 
-  const { updatedProject } = await updateProjectService({
+  const updatedProject = await updateProjectService({
     projectId,
     name,
     description,
-    createdBy,
   });
 
   return res
@@ -95,26 +78,58 @@ export const updateProjectController = asyncHandler(async (req, res) => {
     .json(new ApiResponse(201, "Project updated successfully", { updatedProject }));
 });
 
-export const addMemberController = asyncHandler(async (req, res) => {
-  const { username, projectId, role } = addMemberSchema.parse({
+export const addProjectMemberController = asyncHandler(async (req, res) => {
+  const { email, projectId, role } = addProjectMemberSchema.parse({
     ...req.body,
     projectId: req.params.projectId,
   });
 
-  const { member } = await addMemberService({ username, projectId, role });
+  const { member } = await addProjectMemberService({ email, projectId, role });
 
   return res.status(201).json(new ApiResponse(201, "Member added successfully", { member }));
 });
 
-export const updateMemberRoleController = asyncHandler(async (req, res) => {
-  const { username, projectId, role } = updateMemberRoleSchema.parse({
+export const removeProjectMemberController = asyncHandler(async (req, res) => {
+  const { projectId, email } = removeProjectMemberSchema.parse({
     ...req.body,
     projectId: req.params.projectId,
   });
 
-  const { member } = await updateMemberRoleService({ username, projectId, role });
+  const member = await removeProjectMemberService({ projectId, email });
+
+  return res.status(200).json(new ApiResponse(200, "Member removed successfully", { member }));
+});
+
+export const getAllProjectMembersController = asyncHandler(async (req, res) => {
+  const { projectId } = getAllProjectMembersSchema.parse({
+    projectId: req.params.projectId,
+  });
+
+  const members = await getAllProjectMembersService(projectId);
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, "Fetched all project members successfully", { members }));
+});
+
+export const updateMemberRoleController = asyncHandler(async (req, res) => {
+  const { memberId, role } = updateMemberRoleSchema.parse({
+    ...req.body,
+    memberId: req.params.memberId,
+  });
+
+  const member = await updateMemberRoleService({ memberId, role });
 
   return res.status(201).json(new ApiResponse(201, "Member role update successfully", { member }));
 });
 
-export const deleteProjectController = asyncHandler(async (req, res) => {});
+export const deleteProjectController = asyncHandler(async (req, res) => {
+  const { projectId, userId } = deleteProjectSchema.parse({
+    projectId: req.params.projectId,
+    userId: req.user._id.toString(),
+  });
+
+  const project = await deleteProjectService(projectId);
+
+  return res.status(200).json(new ApiResponse(200, "Project deleted successfully", { project }));
+});

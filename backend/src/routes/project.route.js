@@ -1,28 +1,42 @@
 import { Router } from "express";
 import {
-  addMemberController,
+  addProjectMemberController,
   createProjectController,
-  getAllProjectController,
+  deleteProjectController,
+  getAllProjectMembersController,
+  getAllProjectsController,
   getProjectByIdController,
-  getProjectsCreatedByUserController,
+  removeProjectMemberController,
   updateMemberRoleController,
   updateProjectController,
 } from "../controllers/project.controller.js";
 import { isLoggedIn } from "../middlewares/auth.middleware.js";
-import { isProjectAdmin } from "../middlewares/subtask.middleware.js";
+import { isProjectAdmin, isProjectMember } from "../middlewares/project.middleware.js";
 
 const projectRouter = Router();
 
-projectRouter.route("/create-project").post(isLoggedIn, createProjectController);
-projectRouter.route("/:projectId/add-member").post(isLoggedIn, isProjectAdmin, addMemberController);
+projectRouter.route("/").post(isLoggedIn, createProjectController);
+projectRouter.route("/").get(isLoggedIn, getAllProjectsController);
+
+projectRouter.route("/:projectId").get(isLoggedIn, isProjectMember, getProjectByIdController);
+projectRouter.route("/:projectId").patch(isLoggedIn, isProjectAdmin, updateProjectController);
+
 projectRouter
-  .route("/:projectId/update-role")
-  .post(isLoggedIn, isProjectAdmin, updateMemberRoleController);
-projectRouter.route("/get-all-projects").get(isLoggedIn, getAllProjectController);
-projectRouter.route("/get-created-projects").get(isLoggedIn, getProjectsCreatedByUserController);
-projectRouter.route("/get-project/:projectId").get(isLoggedIn, getProjectByIdController);
+  .route("/:projectId/members")
+  .post(isLoggedIn, isProjectAdmin, addProjectMemberController);
+
 projectRouter
-  .route("/update-project/:projectId")
-  .post(isLoggedIn, isProjectAdmin, updateProjectController);
+  .route("/:projectId/members")
+  .delete(isLoggedIn, isProjectAdmin, removeProjectMemberController);
+
+projectRouter
+  .route("/:projectId/members")
+  .get(isLoggedIn, isProjectMember, getAllProjectMembersController);
+
+projectRouter
+  .route("/:projectId/members/:memberId")
+  .patch(isLoggedIn, isProjectAdmin, updateMemberRoleController);
+
+projectRouter.route("/:projectId").delete(isLoggedIn, isProjectAdmin, deleteProjectController);
 
 export { projectRouter };

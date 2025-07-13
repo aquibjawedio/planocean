@@ -52,9 +52,9 @@ app.use("/api/v1/health", healthCheckRouter);
 app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/user", userRouter);
 app.use("/api/v1/admin", adminRouter);
-app.use("/api/v1/project", projectRouter);
-app.use("/api/v1/project", taskRouter);
-app.use("/api/v1/project", subtaskRouter);
+app.use("/api/v1/projects", projectRouter);
+app.use("/api/v1/projects", taskRouter);
+app.use("/api/v1/projects", subtaskRouter);
 app.use("/api/v1/projectnote", projectNoteRouter);
 
 // Custom Middlewares
