@@ -23,6 +23,7 @@ import { subtaskRouter } from "./routes/subtask.route.js";
 const app = express();
 
 // Cors Configuration
+console.log(`CORS enabled for: ${env.FRONTEND_URL}`);
 app.use(
   cors({
     origin: env.FRONTEND_URL,
