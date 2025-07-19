@@ -31,6 +31,7 @@ import { useTaskStore } from "@/stores/taskStore";
 
 const CreateTaskDialog = () => {
   const [open, setOpen] = useState(false);
+  const { user } = useAuthStore();
   const {
     register,
     handleSubmit,
@@ -41,10 +42,10 @@ const CreateTaskDialog = () => {
     resolver: zodResolver(taskSchema),
     defaultValues: {
       status: "todo",
+      assignedTo: user?._id || null,
     },
   });
 
-  const { user } = useAuthStore();
   const { projectId } = useParams();
   const { members } = useProjectStore();
   const { createTask } = useTaskStore();
@@ -113,7 +114,6 @@ const CreateTaskDialog = () => {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-
             <div className="space-y-1">
               <Label htmlFor="status">Status</Label>
               <Select
@@ -125,7 +125,7 @@ const CreateTaskDialog = () => {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="todo">To Do</SelectItem>
-                  <SelectItem value="in-progress">In Progress</SelectItem>
+                  <SelectItem value="in_progress">In Progress</SelectItem>
                   <SelectItem value="done">Done</SelectItem>
                 </SelectContent>
               </Select>
@@ -146,7 +146,7 @@ const CreateTaskDialog = () => {
                 <SelectContent>
                   {members?.map((member) => (
                     <SelectItem key={member._id} value={member.user}>
-                      {member.user || member.username}
+                      {member.user || member.email}
                     </SelectItem>
                   ))}
                 </SelectContent>
