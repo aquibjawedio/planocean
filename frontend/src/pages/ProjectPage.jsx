@@ -62,14 +62,7 @@ const ProjectPage = () => {
     notes,
   ]);
 
-  if (isLoading ) {
-    return (
-      <div className="min-h-screen flex items-center justify-center flex-col gap-4">
-        <SpinLoader />
-        <span>Loading...</span>
-      </div>
-    );
-  }
+
 
   return (
     <div className="min-h-screen bg-background w-full px-6 py-8 flex justify-center">
@@ -135,25 +128,33 @@ const ProjectPage = () => {
             </div>
 
             <div className="mt-4">
-              <TabsContent value="kanban">
-                <KanbanView tasks={tasks} />
-              </TabsContent>
+              {tasks && (
+                <>
+                  <TabsContent value="kanban">
+                    <KanbanView tasks={tasks} />
+                  </TabsContent>
 
-              <TabsContent value="list">
-                <ListView tasks={tasks} />
-              </TabsContent>
+                  <TabsContent value="list">
+                    <ListView tasks={tasks} />
+                  </TabsContent>
 
-              <TabsContent value="table">
-                <TableView tasks={tasks} />
-              </TabsContent>
+                  <TabsContent value="table">
+                    <TableView tasks={tasks} />
+                  </TabsContent>
+                </>
+              )}
 
-              <TabsContent value="notes">
-                <ProjectNotes projectId={projectId} />
-              </TabsContent>
+              {notes && (
+                <TabsContent value="notes">
+                  <ProjectNotes projectId={projectId} />
+                </TabsContent>
+              )}
 
-              <TabsContent value="members">
-                <ProjectMembers projectId={projectId} members={members} />
-              </TabsContent>
+              {members && (
+                <TabsContent value="members">
+                  <ProjectMembers projectId={projectId} members={members} />
+                </TabsContent>
+              )}
             </div>
           </Tabs>
         </div>
