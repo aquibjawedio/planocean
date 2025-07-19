@@ -56,7 +56,7 @@ export const updateTaskSchema = z.object({
       mimetype: z.string().optional(),
       size: z.number().optional(),
     })
-  ),
+  ).optional(),
   assignedTo: z.string().trim().min(1, "Assigned user id is required"),
 });
 

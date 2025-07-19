@@ -62,7 +62,7 @@ const ProjectPage = () => {
     notes,
   ]);
 
-  if (isLoading || !project || !tasks) {
+  if (isLoading ) {
     return (
       <div className="min-h-screen flex items-center justify-center flex-col gap-4">
         <SpinLoader />
