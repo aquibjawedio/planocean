@@ -3,7 +3,7 @@ import cors from "cors";
 import cookieParser from "cookie-parser";
 import session from "express-session";
 import passport from "passport";
-
+import { rateLimit } from "express-rate-limit";
 // Imports from folders
 import { connectDB } from "./config/connectDB.js";
 import "./config/passport.js";
@@ -31,6 +31,18 @@ app.use(
     allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
+
+// Rate Limit Configuration
+app.use(
+  rateLimit({
+    windowMs: 10 * 60 * 1000,
+    limit: 500,
+    standardHeaders: "draft-8",
+    legacyHeaders: false,
+    ipv6Subnet: 56,
+  })
+);
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());

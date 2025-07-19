@@ -70,12 +70,6 @@ const RegisterForm = () => {
             <div className="grid gap-3">
               <div className="flex items-center">
                 <Label htmlFor="password">Password</Label>
-                <Link
-                  to="/auth/forgot-password"
-                  className="ml-auto text-sm underline-offset-2 hover:underline"
-                >
-                  Forgot password?
-                </Link>
               </div>
 
               <div className="relative">

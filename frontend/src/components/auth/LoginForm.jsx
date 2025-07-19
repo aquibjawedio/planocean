@@ -6,11 +6,14 @@ import { loginSchema } from "@/schemas/authSchema";
 import { Eye, EyeOff } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useAuthStore } from "@/stores/authStore";
 
 const LoginForm = () => {
   const [hidePassword, setHidePassword] = useState(true);
+  const { loginUser } = useAuthStore();
+  const navigate = useNavigate();
 
   const {
     register,
@@ -19,7 +22,13 @@ const LoginForm = () => {
   } = useForm({ resolver: zodResolver(loginSchema) });
 
   const onSubmit = async (formData) => {
-    console.log("Form submitted", formData);
+    console.log("FORM DATA : ", formData);
+    try {
+      await loginUser(formData);
+      navigate("/profile")
+    } catch (error) {
+      console.log("ERRORO IN LOGIN", error)
+    }
   };
 
   return (

@@ -1,13 +1,20 @@
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/ApiError.js";
 import { UserRolesEnum } from "../constants/user.constant.js";
-import { verifyJWTAccessToken } from "../utils/jwt.js";
+import { clearCookieOptions, verifyJWTAccessToken } from "../utils/jwt.js";
 
 export const isLoggedIn = asyncHandler(async (req, res, next) => {
   try {
+    const refreshToken = req.cookies?.refreshToken;
+    if (!refreshToken) {
+      const options = clearCookieOptions();
+      res.clearCookie("refreshToken", options);
+      res.clearCookie("accessToken", options);
+      throw new ApiError(401, "Refresh token missing");
+    }
     const accessToken = req.cookies?.accessToken || req.headers.authorization?.split(" ")[1];
     if (!accessToken) {
-      throw new ApiError(401, "Unauthorized! Access token missing");
+      throw new ApiError(401, "AccessTokenMissing");
     }
 
     const decodedUser = verifyJWTAccessToken(accessToken);

@@ -12,19 +12,17 @@ import { isProjectAdmin, isProjectMember } from "../middlewares/project.middlewa
 
 const taskRouter = Router();
 
-taskRouter.route("/:projectId/create-task").post(isLoggedIn, isProjectAdmin, createTaskController);
+taskRouter.route("/:projectId/tasks").post(isLoggedIn, isProjectAdmin, createTaskController);
+taskRouter.route("/:projectId/tasks/:taskId").post(isLoggedIn, isProjectAdmin, updateTaskController);
 taskRouter
-  .route("/:projectId/:taskId/update-task")
-  .post(isLoggedIn, isProjectAdmin, updateTaskController);
-taskRouter
-  .route("/:projectId/:taskId/update-task-status")
+  .route("/:projectId/tasks/:taskId/status")
   .post(isLoggedIn, isProjectMember, updatedTaskStatusController);
-taskRouter.route("/:projectId/get-all-task").get(isLoggedIn, isProjectMember, getAllTaskController);
+taskRouter.route("/:projectId/tasks").get(isLoggedIn, isProjectMember, getAllTaskController);
 taskRouter
-  .route("/:projectId/get-task-by-id/:taskId")
+  .route("/:projectId/tasks/:taskId")
   .get(isLoggedIn, isProjectMember, getTaskByIdController);
 taskRouter
-  .route("/:projectId/:taskId/delete-task")
+  .route("/:projectId/tasks/:taskId")
   .delete(isLoggedIn, isProjectAdmin, deleteTaskController);
 
 export { taskRouter };

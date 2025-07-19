@@ -38,7 +38,7 @@ export const registerUserController = asyncHandler(async (req, res) => {
 export const loginUserController = asyncHandler(async (req, res) => {
   if (req.cookies?.refreshToken) {
     logger.warn("User is already logged in, cannot login again");
-    throw new ApiError(400, "User is already loggedin");
+    throw new ApiError(401, "User is already loggedin");
   }
   const { email, password } = loginUserSchema.parse(req.body);
 
@@ -92,6 +92,11 @@ export const refreshAccessTokenController = asyncHandler(async (req, res) => {
   const { refreshToken } = refreshAccessTokenSchema.parse({
     refreshToken: req.cookies?.refreshToken,
   });
+
+  if (!refreshToken) {
+    logger.warn("Refresh token is missing or invalid");
+    throw new ApiError(401, "Unauthorized! Refresh token missing");
+  }
 
   const { user, newAccessToken, accessCookieOptions, newRefreshToken, refreshCookieOptions } =
     await refreshAccessTokenService(refreshToken);

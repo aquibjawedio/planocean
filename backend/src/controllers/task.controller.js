@@ -46,6 +46,10 @@ export const getAllTaskController = asyncHandler(async (req, res) => {
 
   const tasks = await Task.find({ project: projectId });
 
+  if (!tasks || tasks.length === 0) {
+    throw new ApiError(404, "No tasks found for this project");
+  }
+
   return res.status(200).json(new ApiResponse(200, "All tasks fetched successfully", { tasks }));
 });
 
