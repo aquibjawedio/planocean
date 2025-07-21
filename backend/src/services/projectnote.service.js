@@ -19,7 +19,10 @@ export const createProjectNoteService = async ({ content, project, createdBy }) 
 export const getAllProjectNoteService = async (projectId) => {
   logger.info(`Attempting to fetch all project notes for project: ${projectId}`);
 
-  const projectNotes = await ProjectNote.find({ project: projectId });
+  const projectNotes = await ProjectNote.find({ project: projectId }).populate(
+    "createdBy",
+    "fullname username avatarUrl isEmailVerified"
+  );
 
   if (!projectNotes || projectNotes.length === 0) {
     logger.error(`No project notes found for project: ${projectId}`);

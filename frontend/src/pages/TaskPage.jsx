@@ -48,8 +48,8 @@ const TaskPage = () => {
       <div className="w-full max-w-7xl space-y-6">
         <TaskHeader
           task={task}
-          assignedBy={task?.assignedBy}
-          assignedTo={task?.assignedTo}
+          assignedBy={task?.assignedBy?.fullname}
+          assignedTo={task?.assignedTo?.fullname}
           project={projectId}
         />
 

@@ -99,7 +99,7 @@ const ProfilePage = () => {
                       <h2 className="text-lg font-semibold mb-4">
                         Create Projects
                       </h2>
-                      {projects.map(
+                      {projects?.map(
                         (project) =>
                           project.createdBy === user._id && (
                             <div

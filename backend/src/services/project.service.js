@@ -58,7 +58,7 @@ export const getAllProjectsService = async (userId) => {
 
   const projects = await Project.find({
     $or: [{ createdBy: userId }, { _id: { $in: memberProjectIds } }],
-  });
+  }).populate("createdBy", "fullname username email avatarUrl isEmailVerified");
 
   if (!projects) {
     logger.warn(`Failed to fetch projects : No projects found for user - ${userId}`);
@@ -72,7 +72,10 @@ export const getAllProjectsService = async (userId) => {
 
 export const getProjectByIdService = async (projectId) => {
   logger.info(`Attempt to fetch project : Finding project - ${projectId}`);
-  const project = await Project.findById(projectId);
+  const project = await Project.findById(projectId).populate(
+    "createdBy",
+    "fullname username email avatarUrl isEmailVerified"
+  );
 
   if (!project) {
     logger.warn(`Failed to fetch project : Project not found - ${projectId}`);
@@ -135,6 +138,8 @@ export const addProjectMemberService = async ({ email, projectId, role }) => {
     user: user._id.toString(),
   });
 
+  await member.populate("user", "fullname username avatarUrl isEmailVerified");
+
   if (!member) {
     logger.error(`Failed to add member : Unable to add member in project - ${projectId}`);
     throw new ApiError(500, "Unable to add member in the project");
@@ -172,7 +177,10 @@ export const removeProjectMemberService = async ({ projectId, email }) => {
 
 export const getAllProjectMembersService = async (projectId) => {
   logger.info(`Attempt to fetch project members : Finding project - ${projectId}`);
-  const members = await ProjectMember.find({ project: projectId });
+  const members = await ProjectMember.find({ project: projectId }).populate(
+    "user",
+    "fullname username avatarUrl isEmailVerified"
+  );
 
   if (!members) {
     logger.warn(`Failed to fetch members : No members found for project - ${projectId}`);

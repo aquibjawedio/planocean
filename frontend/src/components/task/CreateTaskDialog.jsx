@@ -22,16 +22,26 @@ import {
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Plus } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { taskSchema } from "@/schemas/taskSchema";
 import { useAuthStore } from "@/stores/authStore";
 import { useParams } from "react-router-dom";
-import { useProjectStore } from "@/stores/projectStore";
 import { useTaskStore } from "@/stores/taskStore";
+import { useMemberStore } from "@/stores/memberStore";
 
 const CreateTaskDialog = () => {
   const [open, setOpen] = useState(false);
   const { user } = useAuthStore();
+
+  const { members, fetchAllMembers } = useMemberStore();
+  const { projectId } = useParams();
+
+  useEffect(() => {
+    if (open && members === null) {
+      fetchAllMembers(projectId);
+    }
+  }, [fetchAllMembers, members, projectId, open]);
+
   const {
     register,
     handleSubmit,
@@ -42,12 +52,10 @@ const CreateTaskDialog = () => {
     resolver: zodResolver(taskSchema),
     defaultValues: {
       status: "todo",
-      assignedTo: user?._id || null,
+      assignedTo: members?.[0]._id || null,
     },
   });
 
-  const { projectId } = useParams();
-  const { members } = useProjectStore();
   const { createTask } = useTaskStore();
 
   const onSubmit = async (data) => {
@@ -75,7 +83,7 @@ const CreateTaskDialog = () => {
   return (
     <Dialog open={open} onOpenChange={setOpen} className="rounded-none">
       <DialogTrigger asChild>
-        <div className="gap-2 flex cursor-pointer items-center justify-center rounded-md">
+        <div className="gap-2 flex cursor-pointer items-center justify-center rounded-md bg-accent-foreground  text-background border border-muted px-4 transition-colors">
           <Plus className="w-4 h-4" />
           <span className="text-sm font-medium">New Task</span>
         </div>
@@ -90,7 +98,6 @@ const CreateTaskDialog = () => {
         </DialogHeader>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          {/* Title */}
           <div className="space-y-1">
             <Label htmlFor="title">Title</Label>
             <Input
@@ -103,7 +110,6 @@ const CreateTaskDialog = () => {
             )}
           </div>
 
-          {/* Description */}
           <div className="space-y-1">
             <Label htmlFor="description">Description</Label>
             <Textarea
@@ -113,14 +119,14 @@ const CreateTaskDialog = () => {
             />
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="flex justify-between space-x-4">
             <div className="space-y-1">
               <Label htmlFor="status">Status</Label>
               <Select
                 defaultValue="todo"
                 onValueChange={(val) => setValue("status", val)}
               >
-                <SelectTrigger>
+                <SelectTrigger className="cursor-pointer">
                   <SelectValue placeholder="Select status" />
                 </SelectTrigger>
                 <SelectContent>
@@ -135,28 +141,33 @@ const CreateTaskDialog = () => {
             </div>
 
             <div className="space-y-1">
-              <Label htmlFor="status">Members</Label>
+              <Label htmlFor="status" className="flex justify-end">
+                Members
+              </Label>
               <Select
-                defaultValue={user?._id}
+                defaultValue={members?.[0]._id}
                 onValueChange={(val) => setValue("assignedTo", val)}
               >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select member" />
+                <SelectTrigger className="cursor-pointer">
+                  <SelectValue
+                    placeholder="Select member"
+                  />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="max-h-60">
                   {members?.map((member) => (
-                    <SelectItem key={member._id} value={member.user}>
-                      {member.user || member.email}
+                    <SelectItem key={member._id} value={member.user._id}>
+                      {member.user.username || member.email}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
+
               {errors.status && (
                 <p className="text-sm text-red-500">{errors.status.message}</p>
               )}
             </div>
           </div>
-          {/* Attachments */}
+
           <div className="space-y-1">
             <Label htmlFor="attachments">Attachments</Label>
             <Input
@@ -174,9 +185,8 @@ const CreateTaskDialog = () => {
             )}
           </div>
 
-          {/* Submit */}
           <DialogFooter>
-            <Button type="submit" className="w-full">
+            <Button type="submit" className="w-full cursor-pointer">
               Create Task
             </Button>
           </DialogFooter>

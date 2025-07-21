@@ -1,7 +1,7 @@
 import KanbanView from "@/components/project/KanbanView";
 import ListView from "@/components/project/ListView";
 import ProjectHeader from "@/components/project/ProjectHeader";
-import ProjectMembers from "@/components/project/ProjectMembers";
+import ProjectMembers from "@/components/member/ProjectMembers";
 import ProjectNotes from "@/components/note/ProjectNotes";
 import TableView from "@/components/project/TableView";
 import SpinLoader from "@/components/shared/SpinLoader";
@@ -22,13 +22,11 @@ import { useParams } from "react-router-dom";
 
 import { useProjectStore } from "@/stores/projectStore";
 import { useTaskStore } from "@/stores/taskStore";
-import { useNoteStore } from "@/stores/noteStore";
 
 const ProjectPage = () => {
   const { projectId } = useParams();
 
-  const { project, isLoading, fetchProject, fetchAllMembers, members } =
-    useProjectStore();
+  const { project, isLoading, fetchProject } = useProjectStore();
 
   const { tasks, fetchAllTasks } = useTaskStore();
 
@@ -39,18 +37,7 @@ const ProjectPage = () => {
     if (!project || project._id !== projectId) {
       fetchProject(projectId);
     }
-    if (!members) {
-      fetchAllMembers(projectId);
-    }
-  }, [
-    tasks,
-    fetchAllTasks,
-    projectId,
-    project,
-    fetchProject,
-    fetchAllMembers,
-    members,
-  ]);
+  }, [tasks, fetchAllTasks, projectId, project, fetchProject]);
 
   if (isLoading && tasks === null) {
     return (
@@ -62,7 +49,7 @@ const ProjectPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background w-full px-6 py-8 flex justify-center">
+    <div className="min-h-screen w-full flex justify-center">
       <div className="w-full max-w-7xl space-y-6">
         <ProjectHeader project={project} createdBy={project?.createdBy} />
 
@@ -109,18 +96,10 @@ const ProjectPage = () => {
                   >
                     <Users size={16} />
                     Members
-                    <Badge className="ml-1">
-                      {members ? members.length : 0}
-                    </Badge>
                   </TabsTrigger>
                 </TabsList>
 
-                <Button
-                  className="text-sm font-medium flex items-center gap-2 cursor-pointer rounded-md"
-                  onClick={() => console.log("Add Task Clicked")}
-                >
-                  <CreateTaskDialog />
-                </Button>
+                <CreateTaskDialog />
               </div>
             </div>
 
@@ -145,11 +124,9 @@ const ProjectPage = () => {
                 <ProjectNotes />
               </TabsContent>
 
-              {members && (
-                <TabsContent value="members">
-                  <ProjectMembers projectId={projectId} members={members} />
-                </TabsContent>
-              )}
+              <TabsContent value="members">
+                <ProjectMembers />
+              </TabsContent>
             </div>
           </Tabs>
         </div>

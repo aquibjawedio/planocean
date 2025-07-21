@@ -44,7 +44,9 @@ export const createTaskController = asyncHandler(async (req, res) => {
 export const getAllTaskController = asyncHandler(async (req, res) => {
   const { projectId } = getAllTaskSchema.parse({ projectId: req.params.projectId });
 
-  const tasks = await Task.find({ project: projectId });
+  const tasks = await Task.find({ project: projectId })
+    .populate("assignedTo", "fullname username avatarUrl isEmailVerified")
+    .populate("assignedBy", "fullname username avatarUrl isEmailVerified");
 
   if (!tasks || tasks.length === 0) {
     throw new ApiError(404, "No tasks found for this project");
@@ -55,7 +57,9 @@ export const getAllTaskController = asyncHandler(async (req, res) => {
 
 export const getTaskByIdController = asyncHandler(async (req, res) => {
   const { taskId } = getTaskByIdSchema.parse({ taskId: req.params.taskId });
-  const task = await Task.findById(taskId);
+  const task = await Task.findById(taskId)
+    .populate("assignedBy", "fullname username avatarUrl isEmailVerified")
+    .populate("assignedTo", "fullname username avatarUrl isEmailVerified");
 
   if (!task) {
     throw new ApiError(404, "Task not found! Invalid task id");

@@ -46,26 +46,6 @@ const useProjectStore = create((set, get) => ({
       set({ isLoading: false });
     }
   },
-
-  fetchAllMembers: async (projectId) => {
-    try {
-      set({ isLoading: true, error: null });
-      const res = await axiosClient.get(`/projects/${projectId}/members`);
-      console.log("Members response:", res);
-      set({
-        members: res.data.data?.members,
-      });
-      console.log("Fetched members", get().members);
-    } catch (error) {
-      console.error("Members fetch error:", error);
-      set({
-        error: "Could not fetch project members",
-      });
-      return [];
-    } finally {
-      set({ isLoading: false });
-    }
-  },
 }));
 
 export { useProjectStore };
