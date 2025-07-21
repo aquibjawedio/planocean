@@ -73,9 +73,9 @@ const CreateTaskDialog = () => {
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={setOpen} className="rounded-none">
       <DialogTrigger asChild>
-        <div className="gap-2 flex cursor-pointer items-center justify-center">
+        <div className="gap-2 flex cursor-pointer items-center justify-center rounded-md">
           <Plus className="w-4 h-4" />
           <span className="text-sm font-medium">New Task</span>
         </div>

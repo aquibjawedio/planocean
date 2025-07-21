@@ -202,7 +202,7 @@ export const forgotPasswordService = async (email) => {
   user.forgotPasswordExpiry = tokenExpiry;
   await user.save();
 
-  const forgotPasswordUrl = `${env.FRONTEND_URL}/auth/forgot-password/${unHashedToken}`;
+  const forgotPasswordUrl = `${env.FRONTEND_URL}/auth/forgot/${unHashedToken}`;
 
   sendEmail({
     email,

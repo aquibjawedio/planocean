@@ -12,6 +12,8 @@ import TaskPage from "@/pages/TaskPage";
 import Layout from "../layout/Layout";
 import SettingsPage from "@/pages/SettingsPage";
 import { useAuthStore } from "@/stores/authStore";
+import VerifyEmail from "@/components/auth/VerifyEmail";
+import SendVerificationEmail from "@/pages/SendVerificationEmail";
 
 const AppRouter = () => {
   const { user } = useAuthStore();
@@ -24,14 +26,23 @@ const AppRouter = () => {
           element={user ? <Navigate to="/profile" /> : <RegisterPage />}
         />
         <Route
+          path="/auth/verify/:token"
+          element={user ? <Navigate to="/profile" /> : <VerifyEmail />}
+        />
+
+        <Route
+          path="/auth/resend"
+          element={
+            user ? <Navigate to="/profile" /> : <SendVerificationEmail />
+          }
+        />
+
+        <Route
           path="/auth/login"
           element={user ? <Navigate to="/profile" /> : <LoginPage />}
         />
-        <Route path="/auth/forgot-password" element={<ForgotPasswordPage />} />
-        <Route
-          path="/auth/reset-password/:token"
-          element={<ResetPasswordPage />}
-        />
+        <Route path="/auth/forgot" element={<ForgotPasswordPage />} />
+        <Route path="/auth/reset/:token" element={<ResetPasswordPage />} />
 
         <Route path="/" element={<Layout />}>
           <Route index element={<LandingPage />} />

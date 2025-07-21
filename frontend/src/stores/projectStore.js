@@ -6,7 +6,6 @@ const useProjectStore = create((set, get) => ({
   project: null,
   members: null,
   member: null,
-  notes: null,
   isLoading: false,
   error: null,
 
@@ -63,25 +62,6 @@ const useProjectStore = create((set, get) => ({
         error: "Could not fetch project members",
       });
       return [];
-    } finally {
-      set({ isLoading: false });
-    }
-  },
-
-  fetchAllProjectNotes: async (projectId) => {
-    try {
-      set({ isLoading: true, error: null });
-      const res = await axiosClient.get(`/projects/${projectId}/notes`);
-      set({
-        notes: res.data.data?.notes,
-      });
-      console.log("Fetched notes", get().notes);
-    } catch (error) {
-      console.error("Notes fetch error:", error);
-      set({
-        notes: null,
-        error: "Could not fetch project notes",
-      });
     } finally {
       set({ isLoading: false });
     }

@@ -11,7 +11,7 @@ import { Separator } from "@/components/ui/separator";
 const ProjectHeader = ({ project, createdBy }) => {
   return (
     <Card className="rounded-2xl shadow-md border bg-muted">
-      <CardHeader className="space-y-4">
+      <CardHeader className="space-y-2  ">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <FolderKanban className="text-muted-foreground w-6 h-6" />

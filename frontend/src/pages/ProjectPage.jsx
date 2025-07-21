@@ -2,15 +2,13 @@ import KanbanView from "@/components/project/KanbanView";
 import ListView from "@/components/project/ListView";
 import ProjectHeader from "@/components/project/ProjectHeader";
 import ProjectMembers from "@/components/project/ProjectMembers";
-import ProjectNotes from "@/components/project/ProjectNotes";
+import ProjectNotes from "@/components/note/ProjectNotes";
 import TableView from "@/components/project/TableView";
 import SpinLoader from "@/components/shared/SpinLoader";
 import CreateTaskDialog from "@/components/task/CreateTaskDialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { useProjectStore } from "@/stores/projectStore";
-import { useTaskStore } from "@/stores/taskStore";
 import {
   Kanban,
   ListTodo,
@@ -22,18 +20,15 @@ import {
 import { useEffect } from "react";
 import { useParams } from "react-router-dom";
 
+import { useProjectStore } from "@/stores/projectStore";
+import { useTaskStore } from "@/stores/taskStore";
+import { useNoteStore } from "@/stores/noteStore";
+
 const ProjectPage = () => {
   const { projectId } = useParams();
 
-  const {
-    project,
-    isLoading,
-    fetchProject,
-    fetchAllMembers,
-    members,
-    notes,
-    fetchAllProjectNotes,
-  } = useProjectStore();
+  const { project, isLoading, fetchProject, fetchAllMembers, members } =
+    useProjectStore();
 
   const { tasks, fetchAllTasks } = useTaskStore();
 
@@ -47,9 +42,6 @@ const ProjectPage = () => {
     if (!members) {
       fetchAllMembers(projectId);
     }
-    if (!notes) {
-      fetchAllProjectNotes(projectId);
-    }
   }, [
     tasks,
     fetchAllTasks,
@@ -58,11 +50,16 @@ const ProjectPage = () => {
     fetchProject,
     fetchAllMembers,
     members,
-    fetchAllProjectNotes,
-    notes,
   ]);
 
-
+  if (isLoading && tasks === null) {
+    return (
+      <div className="flex items-center justify-center">
+        <SpinLoader />
+        <span>Loading project...</span>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background w-full px-6 py-8 flex justify-center">
@@ -72,7 +69,7 @@ const ProjectPage = () => {
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
           <Tabs defaultValue="kanban" className="w-full">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-              <TabsList className="bg-background border rounded-xl p-1 shadow-sm flex gap-2">
+              <TabsList className="bg-background border rounded-md  shadow-sm flex gap-1">
                 <TabsTrigger
                   value="kanban"
                   className="data-[state=active]:bg-muted data-[state=active]:text-foreground rounded-md px-4 py-2 text-sm font-medium flex items-center gap-2 cursor-pointer"
@@ -97,7 +94,7 @@ const ProjectPage = () => {
               </TabsList>
 
               <div className="flex gap-2">
-                <TabsList className="flex gap-2">
+                <TabsList className="bg-background border rounded-md  shadow-sm flex gap-1">
                   <TabsTrigger
                     value="notes"
                     className="data-[state=active]:bg-muted data-[state=active]:text-foreground rounded-md px-4 py-2 text-sm font-medium flex items-center gap-2 cursor-pointer"
@@ -119,7 +116,7 @@ const ProjectPage = () => {
                 </TabsList>
 
                 <Button
-                  className="text-sm font-medium flex items-center gap-2 cursor-pointer"
+                  className="text-sm font-medium flex items-center gap-2 cursor-pointer rounded-md"
                   onClick={() => console.log("Add Task Clicked")}
                 >
                   <CreateTaskDialog />
@@ -144,11 +141,9 @@ const ProjectPage = () => {
                 </>
               )}
 
-              {notes && (
-                <TabsContent value="notes">
-                  <ProjectNotes projectId={projectId} />
-                </TabsContent>
-              )}
+              <TabsContent value="notes">
+                <ProjectNotes />
+              </TabsContent>
 
               {members && (
                 <TabsContent value="members">

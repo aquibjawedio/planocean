@@ -8,19 +8,49 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { Link } from "react-router-dom";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useAuthStore } from "@/stores/authStore";
 
 const RegisterForm = () => {
   const [hidePassword, setHidePassword] = useState(true);
+  const { registerUser, isLoading } = useAuthStore();
+  const [registerSuccess, setRegisterSuccess] = useState(false);
 
   const {
     register,
     handleSubmit,
-    formState: { errors },
+    formState: { errors, touchedFields, isSubmitting },
   } = useForm({ resolver: zodResolver(registerSchema) });
 
   const onSubmit = async (formData) => {
-    console.log("Form submitted", formData);
+    if (isLoading) return;
+    try {
+      setRegisterSuccess(false);
+      await registerUser(formData);
+      setRegisterSuccess(true);
+      console.log("Submitting registration form with data:", formData);
+    } catch (error) {
+      setRegisterSuccess(false);
+      console.error("Error during form submission:", error);
+      return;
+    }
   };
+
+  if (registerSuccess) {
+    return (
+      <div className="flex flex-col items-center justify-center h-screen">
+        <h1 className="text-2xl font-bold">Registration Successful!</h1>
+        <p className="text-gray-500 mt-2">
+          Please check your email to verify your account.
+        </p>
+        <Link
+          to={"/auth/login"}
+          className="text-gray-200 hover:bg-zinc-800 bg-zinc-900 border rounded-md px-4 py-2 mt-4"
+        >
+          Go to Login
+        </Link>
+      </div>
+    );
+  }
 
   return (
     <Card className="w-full max-w-md overflow-hidden p-0 shadow-lg">
@@ -96,7 +126,11 @@ const RegisterForm = () => {
               </div>
             </div>
 
-            <Button type="submit" className="w-full cursor-pointer ">
+            <Button
+              type="submit"
+              className="w-full cursor-pointer"
+              disabled={isSubmitting}
+            >
               Register
             </Button>
 

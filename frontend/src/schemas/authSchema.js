@@ -20,8 +20,16 @@ export const forgotPasswordSchema = z.object({
 });
 
 export const resetPasswordSchema = z.object({
-  newPassword: z.string().min(8, "Password must be at least 8 characters long"),
+  newPassword: z
+    .string()
+    .trim()
+    .min(8, "Password must be at least 8 characters long"),
   confirmPassword: z
     .string()
+    .trim()
     .min(8, "Password must be at least 8 characters long"),
+});
+
+export const resendVerificationEmailSchema = z.object({
+  email: z.string().trim().email("Enter a valid email address"),
 });
