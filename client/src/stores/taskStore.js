@@ -14,12 +14,10 @@ const useTaskStore = create((set, get) => ({
       set({
         tasks: res.data.data?.tasks,
       });
-      console.log("Fetched tasks", get().tasks);
     } catch (error) {
-      console.error("Tasks fetch error:", error);
       set({
         tasks: null,
-        error: "Could not fetch tasks",
+        error: error.message || "Could not fetch tasks",
       });
     } finally {
       set({ isLoading: false });
@@ -35,12 +33,10 @@ const useTaskStore = create((set, get) => ({
       set({
         task: res.data.data?.task,
       });
-      console.log("Fetched task", get().task);
     } catch (error) {
-      console.error("Task fetch error:", error);
       set({
         task: null,
-        error: "Could not fetch task",
+        error: error.message || "Could not fetch task",
       });
     } finally {
       set({ isLoading: false });
@@ -57,9 +53,7 @@ const useTaskStore = create((set, get) => ({
       set({
         tasks: [...get().tasks, res.data.data?.task],
       });
-      console.log("Created task", res.data.data?.task);
     } catch (error) {
-      console.error("Task creation error:", error);
       set({
         error: "Could not create task",
       });

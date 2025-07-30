@@ -14,9 +14,7 @@ const useProjectStore = create((set, get) => ({
       set({ isLoading: true, error: null });
       const res = await axiosClient.post("/projects", formData);
       console.log("Project created:", res.data);
-      set((state) => ({
-        projects: [...(state.projects || []), res.data.data.project],
-      }));
+      set({ projects: [...get().projects, res.data.data.project] });
     } catch (error) {
       console.error("Project creation error:", error);
       set({

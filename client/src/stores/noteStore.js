@@ -19,10 +19,8 @@ export const useNoteStore = create((set, get) => {
       startLoading();
       try {
         const response = await axiosClient.get(`/projects/${projectId}/notes`);
-        console.log("Fetched ALL Notes IN fetchAllNotes     :", response);
         set({ notes: response.data.data?.notes, error: null });
       } catch (error) {
-        console.error("Error fetching notes:", error);
         handleError(error.message);
       } finally {
         stopLoading();
@@ -36,7 +34,6 @@ export const useNoteStore = create((set, get) => {
           `/projects/${projectId}/notes`,
           noteData
         );
-        console.log("Created Note response.data.data?.note :", response);
         set({
           notes: [...(get().notes || []), response.data.data?.projectNote],
           error: null,

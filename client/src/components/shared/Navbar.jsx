@@ -7,6 +7,7 @@ import {
   LogOut,
   Settings,
   ProjectorIcon,
+  Github,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -41,18 +42,36 @@ const Navbar = () => {
 
         {/* Right: Icons and Menu */}
         <div className="flex items-center gap-4">
-          {/* Notifications */}
+          {/* Notification Button */}
           <Button
+            size="icon"
             variant="ghost"
             className="relative rounded-full p-2 cursor-pointer"
             aria-label="Notifications"
           >
-            <Bell className="h-5 w-5 text-muted-foreground" />
-            <Badge className="absolute top-1 right-1 inline-flex items-center justify-center px-1.5 py-0.5 text-[10px] font-bold leading-none text-white bg-red-500 rounded-full">
+            <Bell className="h-5 w-5" />
+            <Badge className="absolute top-1 right-1 inline-flex items-center justify-center px-1 py-0.5 text-[10px] font-bold leading-none text-white bg-red-500 rounded-full">
               3
             </Badge>
           </Button>
 
+          {/* GitHub repo button */}
+          <Button
+            size="icon"
+            variant="ghost"
+            className="rounded-full cursor-pointer"
+          >
+            <a
+              href="https://github.com/aquibjawedio/planocean"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center justify-center h-full w-full"
+            >
+              <Github className="h-5 w-5" />
+            </a>
+          </Button>
+
+          {/* Theme Toggle Button */}
           <Button
             variant="ghost"
             size="icon"

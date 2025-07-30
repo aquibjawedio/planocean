@@ -74,7 +74,7 @@ const TableView = ({ tasks }) => {
                       className="flex items-center gap-2 text-sm text-muted-foreground hover:underline"
                     >
                       {getAttachmentIcon(a.mimetype)}
-                      <span className="truncate">{a.url.split("/").pop()}</span>
+                      <span className="truncate">{a.url?.split("/").pop()}</span>
                     </a>
                   ))
                 ) : (

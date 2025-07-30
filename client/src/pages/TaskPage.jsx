@@ -51,7 +51,7 @@ const TaskPage = () => {
           task={task}
           assignedBy={task?.assignedBy?.fullname}
           assignedTo={task?.assignedTo?.fullname}
-          project={projectId}
+          project={task?.project?.name}
         />
 
         <Card className="rounded-xl border bg-muted shadow-sm">

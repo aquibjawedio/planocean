@@ -59,7 +59,8 @@ export const getTaskByIdController = asyncHandler(async (req, res) => {
   const { taskId } = getTaskByIdSchema.parse({ taskId: req.params.taskId });
   const task = await Task.findById(taskId)
     .populate("assignedBy", "fullname username avatarUrl isEmailVerified")
-    .populate("assignedTo", "fullname username avatarUrl isEmailVerified");
+    .populate("assignedTo", "fullname username avatarUrl isEmailVerified")
+    .populate("project", "name description");
 
   if (!task) {
     throw new ApiError(404, "Task not found! Invalid task id");

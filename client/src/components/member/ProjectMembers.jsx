@@ -7,6 +7,7 @@ import { useMemberStore } from "@/stores/memberStore";
 import { useParams } from "react-router-dom";
 import VerificationBadge from "../shared/VerificationBadge";
 import { AddMemberDialog } from "./AddMemberDialog";
+import MemberOptionDropdown from "./MemberOptionDropdown";
 
 const roleLabel = {
   project_admin: "Admin",
@@ -70,15 +71,20 @@ const ProjectMembers = () => {
                         <VerificationBadge createdBy={user} />
                       </div>
                     </div>
-                    <Badge
-                      variant={
-                        member.role === "project_admin"
-                          ? "default"
-                          : "secondary"
-                      }
-                    >
-                      {roleLabel[member.role]}
-                    </Badge>
+
+                    <div className="flex items-center gap-2">
+                      <Badge
+                        variant={
+                          member.role === "project_admin"
+                            ? "default"
+                            : "secondary"
+                        }
+                      >
+                        {roleLabel[member.role]}
+                      </Badge>
+
+                      <MemberOptionDropdown />
+                    </div>
                   </div>
                 );
               })

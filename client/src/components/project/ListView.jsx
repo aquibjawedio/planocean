@@ -51,7 +51,7 @@ const ListView = ({ tasks }) => {
                   >
                     {getAttachmentIcon(file.mimetype)}
                     <span className="truncate">
-                      {file.url.split("/").pop()}
+                      {file?.url?.split("/").pop()}
                     </span>
                   </a>
                 ))}
