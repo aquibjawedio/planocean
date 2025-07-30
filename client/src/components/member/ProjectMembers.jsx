@@ -83,7 +83,7 @@ const ProjectMembers = () => {
                         {roleLabel[member.role]}
                       </Badge>
 
-                      <MemberOptionDropdown />
+                      <MemberOptionDropdown member={member} />
                     </div>
                   </div>
                 );

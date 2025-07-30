@@ -26,7 +26,7 @@ projectRouter
   .post(isLoggedIn, isProjectAdmin, addProjectMemberController);
 
 projectRouter
-  .route("/:projectId/members")
+  .route("/:projectId/members/:memberId")
   .delete(isLoggedIn, isProjectAdmin, removeProjectMemberController);
 
 projectRouter

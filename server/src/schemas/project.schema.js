@@ -34,7 +34,7 @@ export const addProjectMemberSchema = z.object({
 
 export const removeProjectMemberSchema = z.object({
   projectId: z.string().trim().min(1, "Project id is required"),
-  email: z.string().email("Invalid email format"),
+  memberId: z.string().trim().min(1, "Member id is required"),
 });
 
 export const getAllProjectMembersSchema = z.object({

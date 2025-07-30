@@ -151,26 +151,22 @@ export const addProjectMemberService = async ({ email, projectId, role }) => {
   return { member };
 };
 
-export const removeProjectMemberService = async ({ projectId, email }) => {
-  logger.info(`Attempt to remove member : Finding user with email - ${email}`);
+export const removeProjectMemberService = async ({ projectId, memberId }) => {
+  logger.info(`Attempt to remove member : Finding user with memberId - ${memberId}`);
 
-  const user = await User.find({ email });
-  if (!user) {
-    logger.warn(`Failed to remove member : User not found with email - ${email}`);
-    throw new ApiError(404, "User not found! Invalid email");
-  }
   logger.info(`User found : Removing member from project - ${projectId}`);
+
   const member = await ProjectMember.findOneAndDelete({
+    _id: memberId,
     project: projectId,
-    user: user._id.toString(),
-  });
+  }).populate("user", "fullname username avatarUrl isEmailVerified");
 
   if (!member) {
     logger.warn(`Failed to remove member : Member not found in project - ${projectId}`);
     throw new ApiError(404, "Member not found in this project");
   }
   logger.info(
-    `Member removed successfully : Member - ${user.username} removed from project - ${projectId}`
+    `Member removed successfully : Member - ${memberId} removed from project - ${projectId}`
   );
   return member;
 };

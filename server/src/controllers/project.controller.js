@@ -90,12 +90,12 @@ export const addProjectMemberController = asyncHandler(async (req, res) => {
 });
 
 export const removeProjectMemberController = asyncHandler(async (req, res) => {
-  const { projectId, email } = removeProjectMemberSchema.parse({
-    ...req.body,
+  const { projectId, memberId } = removeProjectMemberSchema.parse({
+    memberId: req.params.memberId,
     projectId: req.params.projectId,
   });
 
-  const member = await removeProjectMemberService({ projectId, email });
+  const member = await removeProjectMemberService({ projectId, memberId });
 
   return res.status(200).json(new ApiResponse(200, "Member removed successfully", { member }));
 });

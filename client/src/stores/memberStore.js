@@ -56,6 +56,26 @@ const useMemberStore = create((set, get) => {
         stopLoading();
       }
     },
+
+    removeMember: async ({ projectId, memberId }) => {
+      startLoading();
+      try {
+        const response = await axiosClient.delete(
+          `/projects/${projectId}/members/${memberId}`
+        );
+        console.log("Removed Member:", response.data.data?.member);
+        const updatedMembers = get().members.filter(
+          (member) => member._id !== memberId
+        );
+        set({ members: updatedMembers, error: null });
+        handleSuccess("Member removed successfully");
+      } catch (error) {
+        console.error("Error removing member:", error);
+        handleError(error.message);
+      } finally {
+        stopLoading();
+      }
+    },
   };
 });
 
