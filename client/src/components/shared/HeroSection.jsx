@@ -7,7 +7,7 @@ const HeroSection = () => {
   const { isAuthenticated } = useAuthStore();
 
   return (
-    <section className="bg-background py-20 sm:py-28 px-4">
+    <section className=" py-20 sm:py-28 px-4">
       <div className="max-w-6xl mx-auto text-center">
         <h1 className="text-4xl sm:text-6xl font-extrabold text-foreground tracking-tight leading-tight">
           Set Sail for Productive Waters with{" "}
@@ -35,7 +35,7 @@ const HeroSection = () => {
               className="flex items-center"
             >
               <Github className="mr-2 h-4 w-4" />
-              GitHub Repo
+              Source Code
             </a>
           </Button>
         </div>

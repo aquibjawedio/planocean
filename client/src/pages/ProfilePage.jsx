@@ -1,4 +1,3 @@
-import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Package } from "lucide-react";
@@ -7,12 +6,13 @@ import { useProjectStore } from "@/stores/projectStore";
 import { useEffect } from "react";
 import { useAuthStore } from "@/stores/authStore";
 import { useNavigate } from "react-router-dom";
+import CreateProjectDialog from "@/components/project/CreateProjectDialog";
 
 const ProfilePage = () => {
   const { projects, isLoading, fetchAllProjects } = useProjectStore();
   const { user } = useAuthStore();
 
-  const nagigate = useNavigate();
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (!projects) {
@@ -60,7 +60,7 @@ const ProfilePage = () => {
                             key={project._id}
                             className="border p-4 rounded-lg cursor-pointer"
                             onClick={() => {
-                              nagigate(`/projects/${project._id}`);
+                              navigate(`/projects/${project._id}`);
                             }}
                           >
                             <h3 className="text-md font-bold">
@@ -82,9 +82,7 @@ const ProfilePage = () => {
                       <p className="text-muted-foreground mb-4">
                         Create your first project by clicking on create project.
                       </p>
-                      <Button className="cursor-pointer">
-                        Create a project
-                      </Button>
+                      <CreateProjectDialog />
                     </div>
                   )}
                 </CardContent>
@@ -95,18 +93,22 @@ const ProfilePage = () => {
               <Card>
                 <CardContent className="pt-4">
                   {projects && projects.length > 0 ? (
-                    <div>
-                      <h2 className="text-lg font-semibold mb-4">
-                        Create Projects
-                      </h2>
-                      {projects?.map(
-                        (project) =>
-                          project.createdBy === user._id && (
+                    (() => {
+                      const createdProjects = projects.filter(
+                        (project) => project.createdBy._id === user._id
+                      );
+
+                      return createdProjects.length > 0 ? (
+                        <div>
+                          <h2 className="text-lg font-semibold mb-4">
+                            Create Projects
+                          </h2>
+                          {createdProjects.map((project) => (
                             <div
                               key={project._id}
                               className="border p-4 rounded-lg cursor-pointer"
                               onClick={() => {
-                                nagigate(`/projects/${project._id}`);
+                                navigate(`/projects/${project._id}`);
                               }}
                             >
                               <h3 className="text-md font-bold">
@@ -116,9 +118,21 @@ const ProfilePage = () => {
                                 {project.description}
                               </p>
                             </div>
-                          )
-                      )}
-                    </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="text-center py-8">
+                          <Package className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
+                          <h3 className="text-lg font-semibold mb-2">
+                            No projects created yet
+                          </h3>
+                          <p className="text-muted-foreground mb-4">
+                            Projects created by you will show up here.
+                          </p>
+                          <CreateProjectDialog />
+                        </div>
+                      );
+                    })()
                   ) : (
                     <div className="text-center py-8">
                       <Package className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
@@ -128,7 +142,7 @@ const ProfilePage = () => {
                       <p className="text-muted-foreground mb-4">
                         Projects created by you will show up here.
                       </p>
-                      <Button className="cursor-pointer">Learn More</Button>
+                      <CreateProjectDialog />
                     </div>
                   )}
                 </CardContent>

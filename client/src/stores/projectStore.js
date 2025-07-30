@@ -9,6 +9,24 @@ const useProjectStore = create((set, get) => ({
   isLoading: false,
   error: null,
 
+  createProject: async (formData) => {
+    try {
+      set({ isLoading: true, error: null });
+      const res = await axiosClient.post("/projects", formData);
+      console.log("Project created:", res.data);
+      set((state) => ({
+        projects: [...(state.projects || []), res.data.data.project],
+      }));
+    } catch (error) {
+      console.error("Project creation error:", error);
+      set({
+        error: "Could not create project",
+      });
+    } finally {
+      set({ isLoading: false });
+    }
+  },
+
   fetchAllProjects: async () => {
     try {
       set({ isLoading: true, error: null });

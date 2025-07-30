@@ -14,6 +14,7 @@ import SettingsPage from "@/pages/SettingsPage";
 import { useAuthStore } from "@/stores/authStore";
 import VerifyEmail from "@/components/auth/VerifyEmail";
 import SendVerificationEmail from "@/pages/SendVerificationEmail";
+import ProjectDashboardPage from "@/pages/ProjectDashboardPage";
 
 const AppRouter = () => {
   const { user } = useAuthStore();
@@ -51,6 +52,14 @@ const AppRouter = () => {
             element={
               <ProtectedRoute>
                 <ProfilePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="projects"
+            element={
+              <ProtectedRoute>
+                <ProjectDashboardPage />
               </ProtectedRoute>
             }
           />

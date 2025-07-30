@@ -1,6 +1,6 @@
-import React, { use, useEffect } from "react";
+import React, { useEffect } from "react";
 
-import { Circle, CheckCircle, File } from "lucide-react";
+import { Circle, CheckCircle, File, Plus } from "lucide-react";
 import {
   Card,
   CardHeader,
@@ -16,6 +16,7 @@ import { useSubTaskStore } from "@/stores/subTaskStore";
 import SpinLoader from "@/components/shared/SpinLoader";
 import { Badge } from "@/components/ui/badge";
 import TaskHeader from "@/components/task/TaskHeader";
+import { Button } from "@/components/ui/button";
 
 const TaskPage = () => {
   const { taskId } = useParams();
@@ -44,7 +45,7 @@ const TaskPage = () => {
   console.log("Task data:", task);
 
   return (
-    <div className="min-h-screen bg-background px-6 py-8 flex justify-center">
+    <div className="min-h-screen bg-background flex justify-center">
       <div className="w-full max-w-7xl space-y-6">
         <TaskHeader
           task={task}
@@ -53,10 +54,13 @@ const TaskPage = () => {
           project={projectId}
         />
 
-
         <Card className="rounded-xl border bg-muted shadow-sm">
-          <CardHeader>
+          <CardHeader className="flex items-center justify-between">
             <CardTitle className="text-lg text-foreground">Subtasks</CardTitle>
+            <Button className="w-fit cursor-pointer">
+              <Plus />
+              <span>Subtask</span>
+            </Button>
           </CardHeader>
           <CardContent className="space-y-4">
             {subtasks && subtasks.length === 0 && (

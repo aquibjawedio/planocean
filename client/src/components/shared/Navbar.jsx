@@ -1,5 +1,13 @@
 import { Link, useNavigate } from "react-router-dom";
-import { Bell, Moon, Sun, User, LogOut, Settings } from "lucide-react";
+import {
+  Bell,
+  Moon,
+  Sun,
+  User,
+  LogOut,
+  Settings,
+  ProjectorIcon,
+} from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -80,10 +88,18 @@ const Navbar = () => {
 
               <DropdownMenuItem
                 className="cursor-pointer p-2.5"
+                onClick={() => navigate("/projects")}
+              >
+                <ProjectorIcon className="w-4 h-4 mr-2" />
+                Projects
+              </DropdownMenuItem>
+
+              <DropdownMenuItem
+                className="cursor-pointer p-2.5"
                 onClick={() => navigate("/user/settings")}
               >
                 <Settings className="w-4 h-4 mr-2" />
-                Account Settings
+                Settings
               </DropdownMenuItem>
 
               <DropdownMenuSeparator />

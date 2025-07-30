@@ -74,7 +74,6 @@ const CreateTaskDialog = () => {
       assignedBy: user?._id || null,
       project: projectId || null,
     };
-    console.log("Task Form Data:", formData);
     await createTask(projectId, formData);
     reset();
     setOpen(false);
@@ -150,16 +149,19 @@ const CreateTaskDialog = () => {
               >
                 <SelectTrigger className="cursor-pointer">
                   <SelectValue
-                    placeholder="Select member"
+                    placeholder="Select Member"
+                    value={user.username}
                   />
                 </SelectTrigger>
-                <SelectContent className="max-h-60">
-                  {members?.map((member) => (
-                    <SelectItem key={member._id} value={member.user._id}>
-                      {member.user.username || member.email}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
+                {members && (
+                  <SelectContent className="max-h-60">
+                    {members?.map((member) => (
+                      <SelectItem key={member._id} value={member.user._id}>
+                        {member.user.username || member.email}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                )}
               </Select>
 
               {errors.status && (
