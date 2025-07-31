@@ -7,7 +7,7 @@ import { useMemberStore } from "@/stores/memberStore";
 import { useParams } from "react-router-dom";
 import VerificationBadge from "../shared/VerificationBadge";
 import { AddMemberDialog } from "./AddMemberDialog";
-import MemberOptionDropdown from "./MemberOptionDropdown";
+import MemberOptionDropdown from "./MemberOptionsDropdown";
 
 const roleLabel = {
   project_admin: "Admin",

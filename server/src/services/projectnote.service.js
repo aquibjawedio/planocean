@@ -13,7 +13,7 @@ export const createProjectNoteService = async ({ content, project, createdBy }) 
   }
 
   logger.info(`Project Note created successfully : Created by ${createdBy}`);
-  return projectNote;
+  return projectNote.populate("createdBy", "fullname username avatarUrl isEmailVerified");
 };
 
 export const getAllProjectNoteService = async (projectId) => {
@@ -66,7 +66,7 @@ export const updateProjectNoteService = async ({ content, noteId }) => {
 
   logger.info(`Project note with ID: ${noteId} updated successfully`);
 
-  return updatedNote;
+  return updatedNote.populate("createdBy", "fullname username avatarUrl isEmailVerified");
 };
 
 export const deleteProjectNoteService = async ({ projectId, noteId, createdBy, role }) => {

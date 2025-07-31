@@ -45,5 +45,41 @@ export const useNoteStore = create((set, get) => {
         stopLoading();
       }
     },
+
+    deleteNote: async ({ projectId, noteId }) => {
+      startLoading();
+      try {
+        await axiosClient.delete(`/projects/${projectId}/notes/${noteId}`);
+        const filteredNotes = get().notes.filter((note) => note._id !== noteId);
+        set({
+          notes: filteredNotes,
+          error: null,
+        });
+        handleSuccess("Note deleted successfully");
+      } catch (error) {
+        handleError(error.message);
+      } finally {
+        stopLoading();
+      }
+    },
+
+    editNote: async ({ projectId, noteId, content }) => {
+      startLoading();
+      try {
+        const response = await axiosClient.patch(
+          `/projects/${projectId}/notes/${noteId}`,
+          { content }
+        );
+        const updatedNotes = get().notes.map((note) =>
+          note._id === noteId ? response.data.data?.note : note
+        );
+        set({ notes: updatedNotes, error: null });
+        handleSuccess("Note edited successfully");
+      } catch (error) {
+        handleError(error.message);
+      } finally {
+        stopLoading();
+      }
+    },
   };
 });

@@ -17,7 +17,8 @@ import { noteSchema } from "@/schemas/noteSchema";
 
 import { useNoteStore } from "@/stores/noteStore";
 import { Textarea } from "../ui/textarea";
-import { PlusIcon, PlusSquare, Save } from "lucide-react";
+import { PlusIcon, PlusSquare, Save, ScrollText } from "lucide-react";
+import NoteOptionsDropdown from "./NoteOptionsDropdown";
 
 const ProjectNotes = () => {
   const { projectId } = useParams();
@@ -81,7 +82,7 @@ const ProjectNotes = () => {
                 onClick={handleSubmit(onSubmit)}
                 className="cursor-pointer w-full"
               >
-                <PlusIcon/> 
+                <PlusIcon />
                 Add Note
               </Button>
             </CardFooter>
@@ -89,43 +90,52 @@ const ProjectNotes = () => {
         </form>
       </div>
 
-      <Card className="">
-        <CardHeader>
-          <CardTitle>Project Notes</CardTitle>
+      <Card className="shadow-sm border rounded-lg">
+        <CardHeader className="">
+          <CardTitle className="text-lg font-semibold">Project Notes</CardTitle>
         </CardHeader>
 
-        <CardContent className="space-y-6">
-          <ScrollArea className="max-h-[400px] pr-2">
-            <div className="space-y-4">
+        <CardContent className="space-y-6 pt-0">
+          <ScrollArea className="h-[350px]">
+            <div className="space-y-4 pr-3">
               {notes?.length === 0 || !notes ? (
-                <p className="text-muted-foreground text-sm text-center italic">
-                  No notes yet.
-                </p>
+                <div className="flex flex-col gap-2 items-center justify-center pt-6 text-muted-foreground text-sm italic">
+                  <ScrollText />
+                  <span>No notes available for this project.</span>
+                  <span className="text-xs">Start by adding a note.</span>
+                </div>
               ) : (
+                notes &&
                 notes?.map(
                   (note) =>
                     note && (
                       <div
                         key={note._id}
-                        className="group p-4 rounded-xl border bg-muted/40 hover:shadow-md transition-shadow"
+                        className="group relative rounded-lg border bg-muted/40 p-4 py-2 hover:shadow transition-shadow"
                       >
-                        <p className="text-sm text-foreground leading-relaxed">
-                          {note.content}
+                        <div className="absolute top-3 right-3">
+                          <NoteOptionsDropdown note={note} />
+                        </div>
+
+                        <p className="text-sm text-foreground leading-relaxed pr-8">
+                          {note?.content}
                         </p>
 
-                        <div className="mt-4 flex items-center gap-3">
+                        <div className="mt-4 flex items-center gap-3 text-xs text-muted-foreground">
                           <Avatar className="w-6 h-6">
                             <AvatarImage src={note?.createdBy.avatarUrl} />
                             <AvatarFallback>
-                              {note.createdBy.fullname?.[0]?.toUpperCase() ||
+                              {note?.createdBy.fullname?.[0]?.toUpperCase() ||
                                 "U"}
                             </AvatarFallback>
                           </Avatar>
-                          <div className="text-xs text-muted-foreground">
-                            <p className="font-medium">
-                              {note.createdBy.fullname}
-                            </p>
-                            <p>{new Date(note.createdAt).toLocaleString()}</p>
+                          <div className="flex flex-col">
+                            <span className="font-medium">
+                              {note?.createdBy.fullname}
+                            </span>
+                            <span>
+                              {new Date(note?.createdAt).toLocaleString()}
+                            </span>
                           </div>
                         </div>
                       </div>
@@ -136,7 +146,7 @@ const ProjectNotes = () => {
           </ScrollArea>
         </CardContent>
 
-        {notes && (
+        {notes && notes.length > 0 && (
           <CardFooter className="justify-center text-xs text-muted-foreground">
             Showing {notes.length} note{notes.length !== 1 && "s"}
           </CardFooter>
