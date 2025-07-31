@@ -188,13 +188,30 @@ export const getAllProjectMembersService = async (projectId) => {
   return members;
 };
 
-export const updateMemberRoleService = async ({ memberId, role }) => {
+export const updateMemberRoleService = async ({ memberId, role, projectId, userId }) => {
   logger.info(`Attempt to update member role : Finding member - ${memberId}`);
+
+  const project = await Project.findById(projectId);
+  if (!project) {
+    logger.warn(`Failed to update member role : Project not found - ${projectId}`);
+    throw new ApiError(404, "Project not found with this project id");
+  }
+
   const member = await ProjectMember.findById(memberId);
 
   if (!member) {
     logger.warn(`Failed to update member role : Member not found - ${memberId}`);
     throw new ApiError(404, "Member not found with this member id");
+  }
+
+  if (
+    project.createdBy.toString() === member.user.toString() &&
+    role !== UserRolesEnum.PROJECT_ADMIN
+  ) {
+    logger.warn(
+      `Failed to update member role : Cannot change role of project admin - ${member.user}`
+    );
+    throw new ApiError(403, "Cannot change role of project admin");
   }
 
   if (member.role === role) {

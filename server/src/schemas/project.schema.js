@@ -42,13 +42,15 @@ export const getAllProjectMembersSchema = z.object({
 });
 
 export const updateMemberRoleSchema = z.object({
-  memberId: z.string().trim().min(1, "Member id is required"),
   role: z
     .enum(AvailableUserRoles, {
       required_error: "Status is required",
       invalid_type_error: "Status must be one of MEMBER or PROJECT_ADMIN",
     })
     .default("MEMBER"),
+  memberId: z.string().trim().min(1, "Member id is required"),
+  projectId: z.string().trim().min(1, "Project id is required"),
+  userId: z.string().trim().min(1, "User id is required"),
 });
 
 export const deleteProjectSchema = z.object({

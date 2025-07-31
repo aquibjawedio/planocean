@@ -9,3 +9,8 @@ export const addMemberSchema = z.object({
   projectId: z.string().nonempty("Project ID is required"),
   role: z.enum(["project_admin", "member"]).default("member"),
 });
+
+export const editMemberRoleSchema = z.object({
+  projectId: z.string().nonempty("Project ID is required"),
+  role: z.enum(["project_admin", "member"]).default("member"),
+});

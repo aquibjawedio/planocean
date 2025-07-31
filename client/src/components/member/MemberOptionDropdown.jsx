@@ -5,14 +5,16 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { ArrowBigUpDash, Ellipsis, Trash } from "lucide-react";
+import { ArrowBigUpDash, Ellipsis, Trash, UserPen } from "lucide-react";
 import ConfirmDialog from "../shared/ConfirmDialog";
 import { useState } from "react";
 import { useMemberStore } from "@/stores/memberStore";
 import { useParams } from "react-router-dom";
+import EditMemberRoleDialog from "./EditMemberRoleDialog";
 
 const MemberOptionDropdown = ({ member }) => {
   const [removeDialogOpen, setRemoveDialogOpen] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
 
   const { removeMember, isLoading } = useMemberStore();
   const { projectId } = useParams();
@@ -33,9 +35,12 @@ const MemberOptionDropdown = ({ member }) => {
             Member Controls
           </DropdownMenuLabel>
 
-          <DropdownMenuItem>
-            <ArrowBigUpDash />
-            Update Role
+          <DropdownMenuItem
+            onSelect={() => setEditDialogOpen(true)}
+            className="flex items-center gap-2 px-2 py-1.5 text-sm font-medium text-muted-foreground cursor-pointer transition-colors hover:bg-muted/50"
+          >
+            <UserPen />
+            Edit Role
           </DropdownMenuItem>
           <DropdownMenuItem
             disabled={member.role === "project_admin"}
@@ -56,6 +61,11 @@ const MemberOptionDropdown = ({ member }) => {
         isLoading={isLoading}
         open={removeDialogOpen}
         onOpenChange={setRemoveDialogOpen}
+      />
+      <EditMemberRoleDialog
+        open={editDialogOpen}
+        onOpenChange={setEditDialogOpen}
+        member={member}
       />
     </>
   );

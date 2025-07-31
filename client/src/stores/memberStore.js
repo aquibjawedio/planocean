@@ -76,6 +76,28 @@ const useMemberStore = create((set, get) => {
         stopLoading();
       }
     },
+
+    editMemberRole: async ({ projectId, memberId, role }) => {
+      startLoading();
+      try {
+        const response = await axiosClient.patch(
+          `/projects/${projectId}/members/${memberId}`,
+          { role }
+        );
+        console.log("Updated Member Role:", response.data.data?.member);
+        const updatedMembers = get().members.map((member) =>
+          member._id === memberId ? { ...member, role } : member
+        );
+        set({ members: updatedMembers, error: null });
+        handleSuccess("Member role updated successfully");
+      } catch (error) {
+        console.error("Error updating member role:", error);
+        handleError(error.message);
+      } finally {
+        stopLoading();
+      }
+    },
+
   };
 });
 

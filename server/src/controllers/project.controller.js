@@ -113,12 +113,14 @@ export const getAllProjectMembersController = asyncHandler(async (req, res) => {
 });
 
 export const updateMemberRoleController = asyncHandler(async (req, res) => {
-  const { memberId, role } = updateMemberRoleSchema.parse({
+  const { memberId, projectId, role, userId } = updateMemberRoleSchema.parse({
     ...req.body,
     memberId: req.params.memberId,
+    projectId: req.params.projectId,
+    userId: req.user._id.toString(),
   });
 
-  const member = await updateMemberRoleService({ memberId, role });
+  const member = await updateMemberRoleService({ memberId, projectId, role, userId });
 
   return res.status(201).json(new ApiResponse(201, "Member role update successfully", { member }));
 });
