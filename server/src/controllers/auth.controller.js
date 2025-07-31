@@ -170,10 +170,5 @@ export const googleOAuthSuccessController = asyncHandler(async (req, res) => {
   res.cookie("refreshToken", refreshToken, refreshCookieOptions);
   res.cookie("accessToken", accessToken, accessCookieOptions);
 
-  return res.status(200).json(
-    new ApiResponse(200, "Google login successful", {
-      user: sanitizeUser(user),
-      accessToken,
-    })
-  );
+  return res.redirect(`${env.FRONTEND_URL}/profile`);
 });

@@ -38,7 +38,7 @@ authRouter.route("/google/callback").get(
 );
 authRouter.route("/success").get(googleOAuthSuccessController);
 authRouter.route("/failure").get((req, res) => {
-  res.status(401).json({ success: false, message: "Google authentication failed" });
+  res.redirect(`${env.FRONTEND_URL}/auth/login`);
 });
 
 export { authRouter };

@@ -33,7 +33,7 @@ export const createSubTaskService = async ({
 export const getAllSubTasksService = async ({ projectId, taskId, userId }) => {
   logger.info(`Fetching all subtasks for taskId: ${taskId}`);
 
-  const subtasks = await SubTask.find({ task: taskId, createdBy: userId });
+  const subtasks = await SubTask.find({ task: taskId });
   if (!subtasks || subtasks.length === 0) {
     logger.warn(`No subtasks found for taskId: ${taskId}`);
     throw new ApiError(404, "No subtasks found for this task");
@@ -83,7 +83,7 @@ export const completeSubtaskService = async ({
 }) => {
   logger.info(`Attempting to update completion status of subtask with ID: ${subtaskId}`);
 
-  const subtask = await SubTask.findOne({ _id: subtaskId, task: taskId, createdBy: userId });
+  const subtask = await SubTask.findOne({ _id: subtaskId, task: taskId,});
 
   if (!subtask) {
     logger.warn(`Subtask with ID: ${subtaskId} not found for taskId: ${taskId}`);

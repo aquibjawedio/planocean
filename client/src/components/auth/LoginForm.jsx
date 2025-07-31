@@ -111,6 +111,11 @@ const LoginForm = () => {
               variant="outline"
               type="button"
               className="w-full gap-2 cursor-pointer"
+              onClick={() =>
+                (window.location.href = `${
+                  import.meta.env.VITE_BACKEND_URL
+                }/api/v1/auth/google`)
+              }
             >
               <img
                 width="48"

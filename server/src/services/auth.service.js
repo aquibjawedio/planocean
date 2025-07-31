@@ -263,10 +263,7 @@ export const handleGoogleOAuthUserService = async (profile) => {
       username,
       email,
       isEmailVerified: true,
-      avatarUrl: {
-        url: profile.photos?.[0]?.value || "https://placehold.co/400",
-        localpath: "",
-      },
+      avatarUrl: profile.photos?.[0]?.value || "https://placehold.co/400",
     });
   }
   return user;

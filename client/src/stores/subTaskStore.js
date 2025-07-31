@@ -50,7 +50,7 @@ const useSubTaskStore = create((set, get) => {
           subtaskData
         );
         handleSuccess(res, "Subtask created successfully");
-        set({ subtasks: [...get().subtasks, res.data.data.subtask] });
+        set({ subtasks: [...(get().subtasks || []), res.data.data.subtask] });
       } catch (error) {
         console.error("Subtask creation error:", error);
         handleError(error, "Failed to create subtask");
