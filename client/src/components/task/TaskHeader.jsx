@@ -15,6 +15,7 @@ import {
   UserRound,
   FolderKanban,
   Calendar,
+  Paperclip,
 } from "lucide-react";
 
 const getFileIcon = (mimetype) => {
@@ -89,18 +90,23 @@ const TaskHeader = ({ task, project, assignedTo, assignedBy }) => {
               Attachments
             </div>
             <div className="flex flex-col sm:flex-row gap-2 w-full">
-              {task.attachments.map((file) => (
-                <a
-                  key={file._id}
-                  href={file.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-1 text-xs text-muted-foreground hover:underline truncate"
-                >
-                  {getFileIcon(file.mimetype)}
-                  <span className="truncate">{file.url.split("/").pop()}</span>
-                </a>
-              ))}
+              {task.attachments.map(
+                (file) =>
+                  file && (
+                    <a
+                      key={file._id}
+                      href={file.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-1 text-xs text-muted-foreground hover:underline truncate"
+                    >
+                      {getFileIcon(file.mimetype)}
+                      <span className="truncate">
+                        {file.url.split("/").pop()}
+                      </span>
+                    </a>
+                  )
+              )}
             </div>
           </CardFooter>
         </>
