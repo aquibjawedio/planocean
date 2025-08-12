@@ -31,13 +31,9 @@ const ProjectPage = () => {
   const { tasks, fetchAllTasks } = useTaskStore();
 
   useEffect(() => {
-    if (!tasks) {
-      fetchAllTasks(projectId);
-    }
-    if (!project || project._id !== projectId) {
-      fetchProject(projectId);
-    }
-  }, [tasks, fetchAllTasks, projectId, project, fetchProject]);
+    fetchAllTasks(projectId);
+    fetchProject(projectId);
+  }, [fetchAllTasks, projectId, fetchProject]);
 
   if (isLoading && tasks === null) {
     return (

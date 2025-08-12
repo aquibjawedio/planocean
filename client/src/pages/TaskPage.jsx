@@ -24,13 +24,9 @@ const TaskPage = () => {
     useSubTaskStore();
 
   useEffect(() => {
-    if (task === null || task._id !== taskId) {
-      fetchTask(projectId, taskId);
-    }
-    if (subtasks === null) {
-      fetchAllSubTasks(projectId, taskId);
-    }
-  }, [taskId, task, projectId, subtasks, fetchTask, fetchAllSubTasks]);
+    fetchTask(projectId, taskId);
+    fetchAllSubTasks(projectId, taskId);
+  }, [taskId, projectId, fetchTask, fetchAllSubTasks]);
 
   if (isLoading || !task) {
     return (
