@@ -31,6 +31,8 @@ app.use(
     allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
+// For ip
+app.set("trust proxy", true);
 
 // Rate Limit Configuration
 app.use(

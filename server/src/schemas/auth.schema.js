@@ -24,10 +24,6 @@ export const resendVerificationURLSchema = z.object({
   email: z.string().email("valid email is required"),
 });
 
-export const refreshAccessTokenSchema = z.object({
-  refreshToken: z.string().trim().min(1, "Refresh token is required"),
-});
-
 export const forgotPasswordSchema = z.object({
   email: z.string().email("valid email is required"),
 });

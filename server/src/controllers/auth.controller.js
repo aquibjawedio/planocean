@@ -2,7 +2,6 @@ import {
   forgotPasswordSchema,
   loginUserSchema,
   logoutUserSchema,
-  refreshAccessTokenSchema,
   registerUserSchema,
   resendVerificationURLSchema,
   resetPasswordSchema,
@@ -42,8 +41,11 @@ export const loginUserController = asyncHandler(async (req, res) => {
   }
   const { email, password } = loginUserSchema.parse(req.body);
 
+  const device = req.headers["user-agent"];
+  const ipAddress = req.ip;
+
   const { user, accessToken, accessCookieOptions, refreshToken, refreshCookieOptions } =
-    await loginUserService(email, password);
+    await loginUserService(email, password, device, ipAddress);
 
   return res
     .status(200)
@@ -89,12 +91,12 @@ export const resendVerificationURLController = asyncHandler(async (req, res) => 
 });
 
 export const refreshAccessTokenController = asyncHandler(async (req, res) => {
-  const { refreshToken } = refreshAccessTokenSchema.parse({
-    refreshToken: req.cookies?.refreshToken,
-  });
+  const refreshToken = req.cookies?.refreshToken;
 
   if (!refreshToken) {
     logger.warn("Refresh token is missing or invalid");
+    res.clearCookie("refreshToken");
+    res.clearCookie("accessToken");
     throw new ApiError(401, "Unauthorized! Refresh token missing");
   }
 

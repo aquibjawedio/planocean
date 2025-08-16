@@ -15,6 +15,7 @@ import { env } from "../config/env.js";
 import { clearCookieOptions, cookieOptions, verifyJWTRefreshToken } from "../utils/jwt.js";
 import { logger } from "../utils/logger.js";
 import { sendEmailVerificationLink } from "../utils/emailVerification.js";
+import { Session } from "../models/session.model.js";
 
 export const registerUserService = async (fullname, username, email, password) => {
   logger.info(`Checking if user already exists with email: ${email} or username: ${username}`);
@@ -52,7 +53,7 @@ export const registerUserService = async (fullname, username, email, password) =
   return sanitizeUser(user);
 };
 
-export const loginUserService = async (email, password) => {
+export const loginUserService = async (email, password, device, ipAddress) => {
   const user = await User.findOne({ email });
 
   if (!user) {
@@ -80,7 +81,15 @@ export const loginUserService = async (email, password) => {
   const refreshToken = user.generateRefreshToken();
   const refreshCookieOptions = cookieOptions(1000 * 60 * 60 * 24 * 7);
 
-  user.refreshToken = refreshToken;
+  const session = await Session.create({
+    user: user._id,
+    refreshToken,
+    device,
+    ipAddress,
+    isValid: true,
+  });
+
+  user.session = session._id;
   await user.save();
 
   return {
@@ -92,11 +101,23 @@ export const loginUserService = async (email, password) => {
   };
 };
 
-export const logoutUserService = async (token) => {
-  if (!token) {
-    logger.warn(`Logout failed : Refresh token is missing - ${token}`);
+export const logoutUserService = async (refreshToken) => {
+  if (!refreshToken) {
+    logger.warn(`Logout failed : Refresh token is missing - ${refreshToken}`);
     throw new ApiError(401, "Refresh token is missing");
   }
+
+  const session = await Session.findOne({
+    refreshToken,
+  });
+
+  if (!session) {
+    throw new ApiError(404, "Session not found for this user");
+  }
+
+  session.refreshToken = null;
+  session.isValid = false;
+  await session.save();
 
   logger.info(`Attemp to logout : Generating cookie options`);
   return clearCookieOptions();
@@ -152,17 +173,25 @@ export const resendVerificationURLService = async (email) => {
 
 export const refreshAccessTokenService = async (refreshToken) => {
   logger.info(`Attempt to refresh token: Decoding data - ${refreshToken}`);
-  const decodedData = verifyJWTRefreshToken(refreshToken);
+  const session = await Session.findOne({
+    refreshToken,
+  });
 
-  if (!decodedData) {
-    logger.warn(`Refresh token failed : Invalid refresh token - ${refreshToken}`);
-    throw new ApiError(401, "Decoded data not found, Refresh token missing");
+  if (!session) {
+    logger.warn(`Refresh token failed : Session not found for token - ${refreshToken}`);
+    throw new ApiError(404, "Session not found for this user");
   }
 
-  const user = await User.findById(decodedData._id);
+  if (!session.isValid) {
+    logger.warn(`Refresh token failed : Session is not valid - ${refreshToken}`);
+    throw new ApiError(401, "Unauthorized! Session is not valid");
+  }
+
+  const user = await User.findById(session.user.toString());
+
   if (!user) {
-    logger.warn(`Refresh token failed : User not found with this decoded data - ${decodedData}`);
-    throw new ApiError(404, "User not found! Invalid refresh token");
+    logger.warn(`Refresh token failed : User not found for session - ${session._id}`);
+    throw new ApiError(404, "User not found for this session");
   }
 
   logger.info(`User found : Now generating access and refresh token for - ${user.email}`);
@@ -172,7 +201,11 @@ export const refreshAccessTokenService = async (refreshToken) => {
   const newRefreshToken = user.generateRefreshToken();
   const refreshCookieOptions = cookieOptions(1000 * 60 * 60 * 24 * 7);
 
-  user.refreshToken = newRefreshToken;
+  session.refreshToken = newRefreshToken;
+  session.isValid = true;
+  await session.save();
+
+  user.session = session._id;
   await user.save();
 
   logger.info(`Acess and Refresh token generated and saved in db - ${user.email}`);

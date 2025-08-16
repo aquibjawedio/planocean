@@ -76,8 +76,9 @@ const userSchema = new Schema(
     forgotPasswordExpiry: {
       type: Date,
     },
-    refreshToken: {
-      type: String,
+    session: {
+      type: Schema.Types.ObjectId,
+      ref: "Session",
     },
   },
   { timestamps: true, versionKey: false }
