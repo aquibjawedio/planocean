@@ -4,10 +4,9 @@ import {
   Moon,
   Sun,
   User,
-  LogOut,
   Settings,
-  ProjectorIcon,
   Github,
+  FolderKanban,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -35,14 +34,11 @@ const Navbar = () => {
   return (
     <nav className="w-full border-b bg-background shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-        {/* Left: Brand */}
         <Link to="/" className="text-xl font-bold text-primary">
           PlanOcean
         </Link>
 
-        {/* Right: Icons and Menu */}
         <div className="flex items-center gap-4">
-          {/* Notification Button */}
           <Button
             size="icon"
             variant="ghost"
@@ -55,7 +51,6 @@ const Navbar = () => {
             </Badge>
           </Button>
 
-          {/* GitHub repo button */}
           <Button
             size="icon"
             variant="ghost"
@@ -71,7 +66,6 @@ const Navbar = () => {
             </a>
           </Button>
 
-          {/* Theme Toggle Button */}
           <Button
             variant="ghost"
             size="icon"
@@ -109,7 +103,7 @@ const Navbar = () => {
                 className="cursor-pointer p-2.5"
                 onClick={() => navigate("/projects")}
               >
-                <ProjectorIcon className="w-4 h-4 mr-2" />
+                <FolderKanban className="w-4 h-4 mr-2" />
                 Projects
               </DropdownMenuItem>
 

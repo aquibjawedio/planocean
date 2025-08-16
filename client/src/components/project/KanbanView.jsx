@@ -127,7 +127,9 @@ const KanbanView = ({ tasks }) => {
                                     src={task.assignedTo.avatarUrl}
                                   />
                                   <AvatarFallback>
-                                    {task.assignedTo.fullname[0]}
+                                    {task.assignedTo.fullname
+                                      ? task.assignedTo.fullname[0]
+                                      : "U"}
                                   </AvatarFallback>
                                 </Avatar>
                                 <span className="text-xs text-muted-foreground">
