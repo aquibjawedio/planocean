@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { AvailableTaskStatus } from "../constants/task.constant.js";
+import { AvailableTaskStatus, AvailableTaskPriorities } from "../constants/task.constant.js";
 
 export const createTaskSchema = z.object({
   userId: z.string().trim().min(1, "User id is required"),
@@ -20,6 +20,17 @@ export const createTaskSchema = z.object({
       invalid_type_error: "Status must be one of TODO, IN_PROGRESS, or DONE",
     })
     .default("todo"),
+  priority: z
+    .enum(AvailableTaskPriorities, {
+      required_error: "Status is required",
+      invalid_type_error: "Status must be one of TODO, IN_PROGRESS, or DONE",
+    })
+    .default("low"),
+  dueDate: z.preprocess((val) => {
+    if (typeof val === "string" || typeof val === "number") return new Date(val);
+    return val;
+  }, z.date().optional()),
+  labels: z.array(z.string()).default([]),
   attachments: z.array(
     z.object({
       url: z.string().url("Invalid URL format").optional(),
@@ -50,13 +61,15 @@ export const updateTaskSchema = z.object({
       invalid_type_error: "Status must be one of TODO, IN_PROGRESS, or DONE",
     })
     .default("todo"),
-  attachments: z.array(
-    z.object({
-      url: z.string().url("Invalid URL format").optional(),
-      mimetype: z.string().optional(),
-      size: z.number().optional(),
-    })
-  ).optional(),
+  attachments: z
+    .array(
+      z.object({
+        url: z.string().url("Invalid URL format").optional(),
+        mimetype: z.string().optional(),
+        size: z.number().optional(),
+      })
+    )
+    .optional(),
   assignedTo: z.string().trim().min(1, "Assigned user id is required"),
 });
 

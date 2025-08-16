@@ -100,8 +100,11 @@ export const refreshAccessTokenController = asyncHandler(async (req, res) => {
     throw new ApiError(401, "Unauthorized! Refresh token missing");
   }
 
+  const device = req.headers["user-agent"];
+  const ipAddress = req.ip;
+
   const { user, newAccessToken, accessCookieOptions, newRefreshToken, refreshCookieOptions } =
-    await refreshAccessTokenService(refreshToken);
+    await refreshAccessTokenService(refreshToken, device, ipAddress);
 
   logger.info(`Access token and Refresh token refreshed successfully for ${user.email}`);
 

@@ -17,20 +17,33 @@ import { Task } from "../models/task.model.js";
 import { ApiError } from "../utils/ApiError.js";
 
 export const createTaskController = asyncHandler(async (req, res) => {
-  const { userId, project, title, description, status, attachments, assignedTo } =
-    createTaskSchema.parse({
-      userId: req.user._id.toString(),
-      project: req.params.projectId,
-      ...req.body,
-    });
-
-  const { task } = await createTaskService({
+  const {
     userId,
     project,
     title,
     description,
     status,
+    priority,
+    dueDate,
+    labels,
     attachments,
+    assignedTo,
+  } = createTaskSchema.parse({
+    userId: req.user._id.toString(),
+    project: req.params.projectId,
+    ...req.body,
+  });
+
+  const { task } = await createTaskService({
+    title,
+    description,
+    status,
+    priority,
+    dueDate,
+    labels,
+    attachments,
+    project,
+    userId,
     assignedTo,
   });
 

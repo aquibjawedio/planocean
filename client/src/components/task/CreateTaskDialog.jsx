@@ -21,16 +21,19 @@ import {
 
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Plus } from "lucide-react";
+import { CalendarDays, Plus, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { taskSchema } from "@/schemas/taskSchema";
 import { useAuthStore } from "@/stores/authStore";
 import { useParams } from "react-router-dom";
 import { useTaskStore } from "@/stores/taskStore";
 import { useMemberStore } from "@/stores/memberStore";
+import { Calendar } from "../ui/calendar";
 
 const CreateTaskDialog = () => {
   const [open, setOpen] = useState(false);
+  const [showCalendar, setShowCalendar] = useState(false);
+  const [date, setDate] = useState(new Date());
   const { user } = useAuthStore();
 
   const { members, fetchAllMembers } = useMemberStore();
@@ -52,9 +55,41 @@ const CreateTaskDialog = () => {
     resolver: zodResolver(taskSchema),
     defaultValues: {
       status: "todo",
-      assignedTo: members?.[0]._id || null,
+      assignedTo: user?._id || "",
     },
   });
+
+  const [labels, setLabels] = useState([]);
+
+  const handleKeyDown = (e) => {
+    const input = e.target;
+    const value = input.value.trim();
+
+    if ((e.key === "Enter" || e.key === ",") && value) {
+      e.preventDefault();
+
+      if (!labels.includes(value)) {
+        const newLabels = [...labels, value];
+        setLabels(newLabels);
+        setValue("labels", newLabels);
+      }
+
+      input.value = "";
+    }
+  };
+
+  const removeLabel = (labelToRemove) => {
+    const updated = labels.filter((label) => label !== labelToRemove);
+    setLabels(updated);
+    setValue("labels", updated);
+  };
+  useEffect(() => {
+    if (!open) {
+      reset();
+      setLabels([]);
+      setDate(new Date());
+    }
+  }, [open, reset]);
 
   const { createTask } = useTaskStore();
 
@@ -63,6 +98,9 @@ const CreateTaskDialog = () => {
       title: data.title,
       description: data.description,
       status: data.status,
+      priority: data.priority || "low",
+      dueDate: data.dueDate || null,
+      labels: data.labels || [],
       attachments: data.attachments
         ? Array.from(data.attachments).map((file) => ({
             filename: file.name,
@@ -118,6 +156,41 @@ const CreateTaskDialog = () => {
             />
           </div>
 
+          <div className="space-y-1 relative">
+            <Label htmlFor="dueDate">Due Date</Label>
+
+            <div
+              className="relative w-full"
+              onClick={() => setShowCalendar((prev) => !prev)}
+            >
+              <Input
+                id="dueDate"
+                value={date ? date.toISOString().split("T")[0] : ""}
+                placeholder="Select due date"
+                readOnly
+                className="pr-10 cursor-pointer"
+              />
+              <CalendarDays className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 cursor-pointer" />
+            </div>
+
+            {showCalendar && (
+              <div className="absolute top-0 bottom-0 z-50 shadow-md">
+                <Calendar
+                  mode="single"
+                  selected={date ?? undefined}
+                  onSelect={(val) => {
+                    if (val) {
+                      setDate(val);
+                      setValue("dueDate", val.toISOString());
+                    }
+                    setShowCalendar(false);
+                  }}
+                  initialFocus
+                />
+              </div>
+            )}
+          </div>
+
           <div className="flex justify-between space-x-4">
             <div className="space-y-1">
               <Label htmlFor="status">Status</Label>
@@ -140,18 +213,37 @@ const CreateTaskDialog = () => {
             </div>
 
             <div className="space-y-1">
+              <Label htmlFor="status">Priority</Label>
+              <Select
+                defaultValue="low"
+                onValueChange={(val) => setValue("priority", val)}
+              >
+                <SelectTrigger className="cursor-pointer">
+                  <SelectValue placeholder="Select priority" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="low">Low</SelectItem>
+                  <SelectItem value="medium">Medium</SelectItem>
+                  <SelectItem value="high">High</SelectItem>
+                </SelectContent>
+              </Select>
+              {errors.priority && (
+                <p className="text-sm text-red-500">
+                  {errors.priority.message}
+                </p>
+              )}
+            </div>
+
+            <div className="space-y-1">
               <Label htmlFor="status" className="flex justify-end">
                 Members
               </Label>
               <Select
-                defaultValue={members?.[0]._id}
+                defaultValue={user?.username || ""}
                 onValueChange={(val) => setValue("assignedTo", val)}
               >
                 <SelectTrigger className="cursor-pointer">
-                  <SelectValue
-                    placeholder="Select Member"
-                    value={user.username}
-                  />
+                  <SelectValue placeholder="Select Member" />
                 </SelectTrigger>
                 {members && (
                   <SelectContent className="max-h-60">
@@ -164,8 +256,10 @@ const CreateTaskDialog = () => {
                 )}
               </Select>
 
-              {errors.status && (
-                <p className="text-sm text-red-500">{errors.status.message}</p>
+              {errors.assignedTo && (
+                <p className="text-sm text-red-500">
+                  {errors.assignedTo.message}
+                </p>
               )}
             </div>
           </div>
@@ -184,6 +278,46 @@ const CreateTaskDialog = () => {
               <p className="text-sm text-red-500">
                 {errors.attachments.message}
               </p>
+            )}
+          </div>
+
+          <div>
+            <Label htmlFor="labels" className="block text-sm font-medium mb-1">
+              Labels
+            </Label>
+
+            <div className="flex flex-wrap gap-2 mb-2">
+              {labels.map((label) => (
+                <span
+                  key={label}
+                  className="flex items-center gap-1 border rounded px-2 py-1 text-sm bg-muted/50"
+                >
+                  {label}
+                  <button
+                    type="button"
+                    aria-label={`Remove label ${label}`}
+                    onClick={() => removeLabel(label)}
+                    className="text-gray-500 hover:text-black rounded-full p-1 focus:outline-none focus:ring-2 focus:ring-gray-300"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </span>
+              ))}
+            </div>
+
+            <Input
+              type="text"
+              id="labels"
+              placeholder="Type and press Enter or , to add labels"
+              onKeyDown={handleKeyDown}
+              className="w-full"
+              autoComplete="off"
+            />
+
+            <Input type="hidden" {...register("labels")} />
+
+            {errors.labels && (
+              <p className="text-sm text-red-500">{errors.labels.message}</p>
             )}
           </div>
 

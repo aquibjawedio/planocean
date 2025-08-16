@@ -13,7 +13,6 @@ import {
   Kanban,
   ListTodo,
   NotebookPen,
-  Plus,
   Table,
   Users,
 } from "lucide-react";
@@ -43,6 +42,8 @@ const ProjectPage = () => {
       </div>
     );
   }
+
+  console.log("Tasks in ProjectPage:", tasks);
 
   return (
     <div className="min-h-screen w-full flex justify-center">

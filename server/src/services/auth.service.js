@@ -171,7 +171,7 @@ export const resendVerificationURLService = async (email) => {
   return sanitizeUser(user);
 };
 
-export const refreshAccessTokenService = async (refreshToken) => {
+export const refreshAccessTokenService = async (refreshToken, device, ipAddress) => {
   logger.info(`Attempt to refresh token: Decoding data - ${refreshToken}`);
   const session = await Session.findOne({
     refreshToken,
@@ -203,6 +203,8 @@ export const refreshAccessTokenService = async (refreshToken) => {
 
   session.refreshToken = newRefreshToken;
   session.isValid = true;
+  session.device = device;
+  session.ipAddress = ipAddress;
   await session.save();
 
   user.session = session._id;
