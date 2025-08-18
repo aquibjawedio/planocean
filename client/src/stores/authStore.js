@@ -1,7 +1,7 @@
 import { axiosClient } from "@/api/axiosClient";
 import { create } from "zustand";
 
-const useAuthStore = create((set, get) => {
+const useAuthStore = create((set) => {
   const startLoading = () => set({ isLoading: true, error: null });
   const stopLoading = () => set({ isLoading: false });
 
@@ -50,7 +50,6 @@ const useAuthStore = create((set, get) => {
           user: res.data.data?.user,
           isAuthenticated: true,
         });
-        console.log("Fetched user profile:", get().user);
       } catch (error) {
         console.error("Profile fetch error:", error);
         set({
@@ -67,7 +66,6 @@ const useAuthStore = create((set, get) => {
       try {
         set({ isLoading: true, error: null });
         await axiosClient.post("/auth/logout");
-        console.log("User logged out successfully");
         set({ user: null, isAuthenticated: false, error: null });
       } catch (error) {
         set({
@@ -90,7 +88,6 @@ const useAuthStore = create((set, get) => {
           headers: { "Content-Type": "multipart/form-data" },
         });
         set({ user: res.data.data.user });
-        console.log("Avatar updated successfully");
       } catch (error) {
         console.error("Avatar update failed:", error);
         set({ error: "Failed to update avatar" });
@@ -102,8 +99,7 @@ const useAuthStore = create((set, get) => {
     registerUser: async (formData) => {
       try {
         set({ isLoading: true, error: null });
-        const res = await axiosClient.post("/auth/register", formData);
-        console.log("User registered successfully:", res.data);
+        await axiosClient.post("/auth/register", formData);
       } catch (error) {
         console.error("Registration error:", error);
         set({
@@ -119,8 +115,7 @@ const useAuthStore = create((set, get) => {
     verifyEmail: async (token) => {
       try {
         set({ isLoading: true });
-        const res = await axiosClient.get(`/auth/verify-email/${token}`);
-        console.log("Email verified : ", res);
+        await axiosClient.get(`/auth/verify-email/${token}`);
       } catch (error) {
         console.log(`Error in verifying email ${error}`);
         set({ isAuthenticated: false, user: null, error: error });

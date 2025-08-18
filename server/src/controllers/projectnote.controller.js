@@ -26,9 +26,9 @@ export const createProjectNoteController = asyncHandler(async (req, res) => {
 
   const io = req.app.get("io");
   io.to(project.toString()).emit("note", {
-    message: "A new note has been created",
+    message: `${projectNote.createdBy.fullname} created a new note in project ${projectNote.project.name}`,
     projectId: project,
-    note: projectNote,
+    userId: createdBy,
   });
 
   return res.status(201).json(

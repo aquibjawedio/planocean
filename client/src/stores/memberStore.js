@@ -23,7 +23,6 @@ const useMemberStore = create((set, get) => {
           `/projects/${projectId}/members`,
           formData
         );
-        console.log("Added Member  :", response.data.data?.member);
         const newMember = response.data.data?.member;
         const currentMembers = get().members || [];
 
@@ -32,7 +31,6 @@ const useMemberStore = create((set, get) => {
           error: null,
         });
         handleSuccess("Member added successfully");
-        console.log("Members after addition:", get().members);
       } catch (error) {
         handleError(error.message);
       } finally {
@@ -46,7 +44,6 @@ const useMemberStore = create((set, get) => {
         const response = await axiosClient.get(
           `/projects/${projectId}/members`
         );
-        console.log("Fetched ALL Members IN fetchAllMembers:", response);
         set({ members: response.data.data?.members, error: null });
         handleSuccess("Members fetched successfully");
       } catch (error) {
@@ -60,10 +57,7 @@ const useMemberStore = create((set, get) => {
     removeMember: async ({ projectId, memberId }) => {
       startLoading();
       try {
-        const response = await axiosClient.delete(
-          `/projects/${projectId}/members/${memberId}`
-        );
-        console.log("Removed Member:", response.data.data?.member);
+        await axiosClient.delete(`/projects/${projectId}/members/${memberId}`);
         const updatedMembers = get().members.filter(
           (member) => member._id !== memberId
         );
@@ -80,11 +74,9 @@ const useMemberStore = create((set, get) => {
     editMemberRole: async ({ projectId, memberId, role }) => {
       startLoading();
       try {
-        const response = await axiosClient.patch(
-          `/projects/${projectId}/members/${memberId}`,
-          { role }
-        );
-        console.log("Updated Member Role:", response.data.data?.member);
+        await axiosClient.patch(`/projects/${projectId}/members/${memberId}`, {
+          role,
+        });
         const updatedMembers = get().members.map((member) =>
           member._id === memberId ? { ...member, role } : member
         );
@@ -97,7 +89,6 @@ const useMemberStore = create((set, get) => {
         stopLoading();
       }
     },
-
   };
 });
 

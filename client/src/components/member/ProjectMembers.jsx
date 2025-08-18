@@ -19,10 +19,8 @@ const ProjectMembers = () => {
   const { projectId } = useParams();
 
   useEffect(() => {
-    if (members === null) {
-      fetchAllMembers(projectId);
-    }
-  }, [projectId, fetchAllMembers, members]);
+    fetchAllMembers(projectId);
+  }, [projectId, fetchAllMembers]);
 
   if (isLoading && members === null) {
     return (

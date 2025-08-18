@@ -30,7 +30,6 @@ const useSubTaskStore = create((set, get) => {
         set({
           subtasks: res.data.data?.subtasks,
         });
-        console.log("Fetched subtasks", get().subtasks);
       } catch (error) {
         console.error("subtasks fetch error:", error);
         set({

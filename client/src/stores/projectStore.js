@@ -13,7 +13,6 @@ const useProjectStore = create((set, get) => ({
     try {
       set({ isLoading: true, error: null });
       const res = await axiosClient.post("/projects", formData);
-      console.log("Project created:", res.data);
       set({ projects: [...get().projects, res.data.data.project] });
     } catch (error) {
       console.error("Project creation error:", error);
@@ -32,7 +31,6 @@ const useProjectStore = create((set, get) => ({
       set({
         projects: res.data.data?.projects,
       });
-      console.log("Fetched projects", get().projects);
     } catch (error) {
       console.error("Projects fetch error:", error);
       set({
@@ -51,7 +49,6 @@ const useProjectStore = create((set, get) => ({
       set({
         project: res.data.data?.project,
       });
-      console.log("Fetched project", get().project);
     } catch (error) {
       console.error("Project fetch error:", error);
       set({

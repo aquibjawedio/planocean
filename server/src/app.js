@@ -35,11 +35,18 @@ const io = new Server(server, {
 });
 
 io.on("connection", (socket) => {
-  socket.on("join", (projectId) => {
+  socket.on("joinRoom", (userId) => {
+    socket.join(userId);
+    console.log(
+      `✅ User ${userId} joined room | 👉 Socket ID: ${socket.id} | 👉 Rooms for socket: ${JSON.stringify([...socket.rooms])}`
+    );
+  });
+
+  socket.on("joinProjectRoom", (projectId) => {
     socket.join(projectId);
-    console.log(`✅ User ${projectId} joined room`);
-    console.log("👉 Socket ID:", socket.id);
-    console.log("👉 Rooms for socket:", socket.rooms);
+    console.log(
+      `✅ Project ${projectId} joined room | 👉 Socket ID: ${socket.id} | 👉 Rooms for socket: ${JSON.stringify([...socket.rooms])}`
+    );
   });
 });
 app.set("io", io);

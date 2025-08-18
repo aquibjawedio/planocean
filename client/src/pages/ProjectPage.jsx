@@ -33,11 +33,10 @@ const ProjectPage = () => {
   }, [fetchAllTasks, projectId, fetchProject]);
 
   useEffect(() => {
-    if (projectId && user) {
-      console.log("📡 Emitting join to project room:", projectId);
-      socket.emit("join", projectId);
+    if (project && projectId && user) {
+      socket.emit("joinProjectRoom", projectId);
     }
-  }, [projectId, user]);
+  }, [project, projectId, user]);
 
   if (isLoading && tasks === null) {
     return (

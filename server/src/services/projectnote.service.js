@@ -13,21 +13,17 @@ export const createProjectNoteService = async ({ content, project, createdBy }) 
   }
 
   logger.info(`Project Note created successfully : Created by ${createdBy}`);
-  return projectNote.populate("createdBy", "fullname username avatarUrl isEmailVerified");
+  await projectNote.populate("createdBy", "fullname username avatarUrl isEmailVerified");
+  await projectNote.populate("project", "name description");
+  return projectNote;
 };
 
 export const getAllProjectNoteService = async (projectId) => {
   logger.info(`Attempting to fetch all project notes for project: ${projectId}`);
 
-  const projectNotes = await ProjectNote.find({ project: projectId }).populate(
-    "createdBy",
-    "fullname username avatarUrl isEmailVerified"
-  );
-
-  if (!projectNotes || projectNotes.length === 0) {
-    logger.error(`No project notes found for project: ${projectId}`);
-    throw new ApiError(404, "No project notes found for this project");
-  }
+  const projectNotes = await ProjectNote.find({ project: projectId })
+    .populate("createdBy", "fullname username avatarUrl isEmailVerified")
+    .populate("project", "name description");
 
   logger.info(`Fetched ${projectNotes.length} project notes for project: ${projectId}`);
   return projectNotes;
@@ -36,7 +32,9 @@ export const getAllProjectNoteService = async (projectId) => {
 export const getProjectNoteByIdService = async (projectId, noteId) => {
   logger.info(`Attempting to fetch project note with ID: ${noteId} for project: ${projectId}`);
 
-  const projectNote = await ProjectNote.findOne({ _id: noteId, project: projectId });
+  const projectNote = await ProjectNote.findOne({ _id: noteId, project: projectId })
+    .populate("createdBy", "fullname username avatarUrl isEmailVerified")
+    .populate("project", "name description");
 
   if (!projectNote) {
     logger.error(`Project note with ID: ${noteId} not found for project: ${projectId}`);
@@ -63,10 +61,12 @@ export const updateProjectNoteService = async ({ content, noteId }) => {
     logger.error(`Failed to update project note with ID: ${noteId}`);
     throw new ApiError(500, "Unable to update project note");
   }
+  await updatedNote.populate("createdBy", "fullname username avatarUrl isEmailVerified");
+  await updatedNote.populate("project", "name description");
 
   logger.info(`Project note with ID: ${noteId} updated successfully`);
 
-  return updatedNote.populate("createdBy", "fullname username avatarUrl isEmailVerified");
+  return updatedNote;
 };
 
 export const deleteProjectNoteService = async ({ projectId, noteId, createdBy, role }) => {

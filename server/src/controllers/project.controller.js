@@ -88,7 +88,7 @@ export const addProjectMemberController = asyncHandler(async (req, res) => {
 
   const io = req.app.get("io");
   io.emit("member", {
-    message: `New member ${member.user.fullname} added to project ${member.project.name}`,
+    message: `${member.user.fullname} added to project ${member.project.name}`,
   });
 
   return res.status(201).json(new ApiResponse(201, "Member added successfully", { member }));

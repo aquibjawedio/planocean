@@ -62,7 +62,9 @@ export const getAllTaskController = asyncHandler(async (req, res) => {
     .populate("assignedBy", "fullname username avatarUrl isEmailVerified");
 
   if (!tasks || tasks.length === 0) {
-    throw new ApiError(404, "No tasks found for this project");
+    return res
+      .status(200)
+      .json(new ApiResponse(200, "No tasks found for this project", { tasks: [] }));
   }
 
   return res.status(200).json(new ApiResponse(200, "All tasks fetched successfully", { tasks }));

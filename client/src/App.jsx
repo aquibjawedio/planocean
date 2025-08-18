@@ -30,11 +30,13 @@ const App = () => {
   useEffect(() => {
     socket.on("connect", () => {
       console.log("Socket connected successfully");
+      if (user) {
+        socket.emit("joinRoom", user._id.toString());
+      }
     });
 
     socket.on("member", (data) => {
-      console.log("New member added:", data);
-      toast(`New member added: ${data.message}`, {
+      toast(data.message, {
         description: "Click to view details",
         action: {
           label: "View",
@@ -44,8 +46,7 @@ const App = () => {
     });
 
     socket.on("note", (data) => {
-      console.log("Note event received:", data);
-      toast(`Note updated: ${data.message}`, {
+      toast(data.message, {
         description: "Click to view details",
         action: {
           label: "View",
@@ -54,13 +55,12 @@ const App = () => {
       });
     });
 
-
     return () => {
       socket.off("connect");
       socket.off("disconnect");
       socket.off("message");
     };
-  }, []);
+  }, [user]);
 
   return <AppRouter />;
 };
