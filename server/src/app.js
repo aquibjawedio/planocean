@@ -1,9 +1,12 @@
 import express from "express";
+import { createServer } from "http";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import session from "express-session";
 import passport from "passport";
 import { rateLimit } from "express-rate-limit";
+import { Server } from "socket.io";
+
 // Imports from folders
 import { connectDB } from "./config/connectDB.js";
 import "./config/passport.js";
@@ -21,6 +24,25 @@ import { adminRouter } from "./routes/admin.route.js";
 import { subtaskRouter } from "./routes/subtask.route.js";
 
 const app = express();
+const server = createServer(app);
+const io = new Server(server, {
+  cors: {
+    origin: env.FRONTEND_URL,
+    credentials: true,
+    methods: ["GET", "POST", "DELETE", "PUT", "PATCH"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  },
+});
+
+io.on("connection", (socket) => {
+  socket.on("join", (projectId) => {
+    socket.join(projectId);
+    console.log(`✅ User ${projectId} joined room`);
+    console.log("👉 Socket ID:", socket.id);
+    console.log("👉 Rooms for socket:", socket.rooms);
+  });
+});
+app.set("io", io);
 
 // Cors Configuration
 app.use(
@@ -74,4 +96,4 @@ app.use("/api/v1/projects", subtaskRouter);
 // Custom Middlewares
 app.use(errorHandler);
 
-export { app };
+export { server };

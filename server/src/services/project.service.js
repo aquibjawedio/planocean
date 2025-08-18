@@ -139,6 +139,7 @@ export const addProjectMemberService = async ({ email, projectId, role }) => {
   });
 
   await member.populate("user", "fullname username avatarUrl isEmailVerified");
+  await member.populate("project", "name description createdBy");
 
   if (!member) {
     logger.error(`Failed to add member : Unable to add member in project - ${projectId}`);
@@ -159,7 +160,9 @@ export const removeProjectMemberService = async ({ projectId, memberId }) => {
   const member = await ProjectMember.findOneAndDelete({
     _id: memberId,
     project: projectId,
-  }).populate("user", "fullname username avatarUrl isEmailVerified");
+  })
+    .populate("user", "fullname username avatarUrl isEmailVerified")
+    .populate("project", "name description createdBy");
 
   if (!member) {
     logger.warn(`Failed to remove member : Member not found in project - ${projectId}`);
@@ -173,10 +176,9 @@ export const removeProjectMemberService = async ({ projectId, memberId }) => {
 
 export const getAllProjectMembersService = async (projectId) => {
   logger.info(`Attempt to fetch project members : Finding project - ${projectId}`);
-  const members = await ProjectMember.find({ project: projectId }).populate(
-    "user",
-    "fullname username avatarUrl isEmailVerified"
-  );
+  const members = await ProjectMember.find({ project: projectId })
+    .populate("user", "fullname username avatarUrl isEmailVerified")
+    .populate("project", "name description createdBy");
 
   if (!members) {
     logger.warn(`Failed to fetch members : No members found for project - ${projectId}`);
@@ -197,7 +199,9 @@ export const updateMemberRoleService = async ({ memberId, role, projectId, userI
     throw new ApiError(404, "Project not found with this project id");
   }
 
-  const member = await ProjectMember.findById(memberId);
+  const member = await ProjectMember.findById(memberId)
+    .populate("user", "fullname username avatarUrl isEmailVerified")
+    .populate("project", "name description createdBy");
 
   if (!member) {
     logger.warn(`Failed to update member role : Member not found - ${memberId}`);

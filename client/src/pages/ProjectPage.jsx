@@ -9,18 +9,14 @@ import CreateTaskDialog from "@/components/task/CreateTaskDialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import {
-  Kanban,
-  ListTodo,
-  NotebookPen,
-  Table,
-  Users,
-} from "lucide-react";
+import { Kanban, ListTodo, NotebookPen, Table, Users } from "lucide-react";
 import { useEffect } from "react";
 import { useParams } from "react-router-dom";
 
 import { useProjectStore } from "@/stores/projectStore";
 import { useTaskStore } from "@/stores/taskStore";
+import socket from "@/api/socket";
+import { useAuthStore } from "@/stores/authStore";
 
 const ProjectPage = () => {
   const { projectId } = useParams();
@@ -29,10 +25,19 @@ const ProjectPage = () => {
 
   const { tasks, fetchAllTasks } = useTaskStore();
 
+  const { user } = useAuthStore();
+
   useEffect(() => {
     fetchAllTasks(projectId);
     fetchProject(projectId);
   }, [fetchAllTasks, projectId, fetchProject]);
+
+  useEffect(() => {
+    if (projectId && user) {
+      console.log("📡 Emitting join to project room:", projectId);
+      socket.emit("join", projectId);
+    }
+  }, [projectId, user]);
 
   if (isLoading && tasks === null) {
     return (

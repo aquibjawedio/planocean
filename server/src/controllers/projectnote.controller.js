@@ -23,6 +23,14 @@ export const createProjectNoteController = asyncHandler(async (req, res) => {
   });
 
   const projectNote = await createProjectNoteService({ content, project, createdBy });
+
+  const io = req.app.get("io");
+  io.to(project.toString()).emit("note", {
+    message: "A new note has been created",
+    projectId: project,
+    note: projectNote,
+  });
+
   return res.status(201).json(
     new ApiResponse(201, "Project Note create successfully", {
       projectNote,
