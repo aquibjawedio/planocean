@@ -4,6 +4,8 @@ import { ApiError } from "../utils/ApiError.js";
 import { ProjectMember } from "../models/projectmember.model.js";
 import { UserRolesEnum } from "../constants/user.constant.js";
 import { logger } from "../utils/logger.js";
+import { Notification } from "../models/notification.model.js";
+import { NotificationTypesEnum } from "../constants/notification.constant.js";
 
 export const createProjectService = async ({ name, description, createdBy }) => {
   logger.info(
@@ -146,6 +148,13 @@ export const addProjectMemberService = async ({ email, projectId, role }) => {
     throw new ApiError(500, "Unable to add member in the project");
   }
 
+  await Notification.create({
+    user: user._id,
+    type: NotificationTypesEnum.INFO,
+    content: `You have been added as a member in project - ${member.project.name}`,
+    project: projectId,
+  });
+
   logger.info(
     `Member added successfully : Member - ${user.username} added to project - ${projectId}`
   );
@@ -230,6 +239,13 @@ export const updateMemberRoleService = async ({ memberId, role, projectId, userI
     logger.error(`Failed to update member role : Unable to update member - ${memberId}`);
     throw new ApiError(500, "Unable to update member role");
   }
+
+  await Notification.create({
+    user: member.user._id,
+    type: NotificationTypesEnum.INFO,
+    content: `Your role has been updated to ${role} in project - ${member.project.name}`,
+    project: projectId,
+  });
 
   logger.info(`Member role updated successfully : Member - ${memberId} with role - ${role}`);
 

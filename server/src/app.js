@@ -22,6 +22,7 @@ import { taskRouter } from "./routes/task.route.js";
 import { userRouter } from "./routes/user.route.js";
 import { adminRouter } from "./routes/admin.route.js";
 import { subtaskRouter } from "./routes/subtask.route.js";
+import { notificationRouter } from "./routes/notification.route.js";
 
 const app = express();
 const server = createServer(app);
@@ -99,6 +100,7 @@ app.use("/api/v1/projects", projectRouter);
 app.use("/api/v1/projects", projectNoteRouter);
 app.use("/api/v1/projects", taskRouter);
 app.use("/api/v1/projects", subtaskRouter);
+app.use("/api/v1/notifications", notificationRouter);
 
 // Custom Middlewares
 app.use(errorHandler);

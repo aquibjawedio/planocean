@@ -1,4 +1,6 @@
+import { NotificationTypesEnum } from "../constants/notification.constant.js";
 import { isProjectAdmin } from "../middlewares/project.middleware.js";
+import { Notification } from "../models/notification.model.js";
 import { Task } from "../models/task.model.js";
 import { ApiError } from "../utils/ApiError.js";
 
@@ -30,6 +32,13 @@ export const createTaskService = async ({
   if (!task) {
     throw new ApiError(500, "Unable to create task");
   }
+
+  await Notification.create({
+    user: assignedTo,
+    content: `New task "${title}" has been assigned to you.`,
+    type: NotificationTypesEnum.INFO,
+    project,
+  });
 
   return { task };
 };
@@ -67,6 +76,13 @@ export const updateTaskService = async ({
     );
   }
 
+  await Notification.create({
+    user: assignedTo,
+    content: `Task "${title}" has been updated.`,
+    type: NotificationTypesEnum.INFO,
+    project,
+  });
+
   return { updatedTask };
 };
 
@@ -87,5 +103,13 @@ export const updatedTaskStatusService = async ({ taskId, userId, projectId, stat
 
   task.status = status;
   await task.save();
+
+  await Notification.create({
+    user: task.assignedTo,
+    content: `Task "${task.title}" status has been updated to ${status}.`,
+    type: NotificationTypesEnum.INFO,
+    project: projectId,
+  });
+
   return { task };
 };

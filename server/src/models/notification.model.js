@@ -2,7 +2,7 @@ import mongoose, { Schema } from "mongoose";
 import {
   AvailableNotificationTypes,
   NotificationTypesEnum,
-} from "../constants/notification.constant";
+} from "../constants/notification.constant.js";
 
 const notificationSchema = new Schema(
   {
@@ -14,7 +14,6 @@ const notificationSchema = new Schema(
     project: {
       type: Schema.Types.ObjectId,
       ref: "Project",
-      required: true,
     },
     content: {
       type: String,

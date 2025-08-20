@@ -1,21 +1,18 @@
 import crypto from "crypto";
-import jwt from "jsonwebtoken";
 
 // Imports from folders
 import { User } from "../models/user.model.js";
 import { ApiError } from "../utils/ApiError.js";
 
 import { sanitizeUser } from "../utils/sanitizeUser.js";
-import {
-  sendEmail,
-  emailVerificationMailGenContent,
-  forgotPasswordMailGenContent,
-} from "../utils/sendEmail.js";
+import { sendEmail, forgotPasswordMailGenContent } from "../utils/sendEmail.js";
 import { env } from "../config/env.js";
-import { clearCookieOptions, cookieOptions, verifyJWTRefreshToken } from "../utils/jwt.js";
+import { clearCookieOptions, cookieOptions } from "../utils/jwt.js";
 import { logger } from "../utils/logger.js";
 import { sendEmailVerificationLink } from "../utils/emailVerification.js";
 import { Session } from "../models/session.model.js";
+import { Notification } from "../models/notification.model.js";
+import { NotificationTypesEnum } from "../constants/notification.constant.js";
 
 export const registerUserService = async (fullname, username, email, password) => {
   logger.info(`Checking if user already exists with email: ${email} or username: ${username}`);
@@ -74,6 +71,13 @@ export const loginUserService = async (email, password, device, ipAddress) => {
     logger.warn(`Login failed : Password doesn't match - ${email}`);
     throw new ApiError(400, "Invalid credentials!. Please enter valid credentials.");
   }
+
+  const notification = await Notification.create({
+    user: user._id,
+    content: "New device logged in",
+    type: NotificationTypesEnum.WARNING,
+    isRead: false,
+  });
 
   const accessToken = user.generateAccessToken();
   const accessCookieOptions = cookieOptions(1000 * 60 * 15);
