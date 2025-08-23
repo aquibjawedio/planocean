@@ -32,7 +32,9 @@ const TaskPage = () => {
     return (
       <div className="min-h-screen flex items-center justify-center flex-col gap-4">
         <SpinLoader />
-        <p className="text-muted-foreground">Loading task...</p>
+        <span className="mt-2 text-foreground/70">
+          Loading tasks — just a moment...
+        </span>
       </div>
     );
   }
@@ -59,7 +61,8 @@ const TaskPage = () => {
           task={task}
           assignedBy={task?.assignedBy?.fullname}
           assignedTo={task?.assignedTo?.fullname}
-          project={task?.project?.name}
+          project={task?.project}
+          isLoading={isLoading}
         />
 
         <Card className="rounded-xl border bg-muted shadow-sm">

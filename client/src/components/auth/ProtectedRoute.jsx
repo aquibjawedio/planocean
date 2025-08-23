@@ -27,7 +27,7 @@ export default function ProtectedRoute({ children }) {
     return (
       <div className="min-h-screen flex items-center justify-center flex-col">
         <SpinLoader />
-        <p className="text-muted-foreground">Checking authentication...</p>
+        <span className="mt-2">Almost there — logging you in...</span>
       </div>
     );
   }

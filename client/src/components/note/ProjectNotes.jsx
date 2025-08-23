@@ -40,15 +40,16 @@ const ProjectNotes = () => {
 
   const onSubmit = async (formData) => {
     await createNote(projectId, formData);
-    console.log("Note created : ", formData);
     reset();
   };
 
-  if (isLoading && notes === null) {
+  if (isLoading && notes == null) {
     return (
-      <div className="flex items-center justify-center">
+      <div className="flex flex-col items-center justify-center mt-10 text-center">
         <SpinLoader />
-        <span>Loading notes...</span>
+        <span className="mt-3 text-foreground/70">
+          Loading notes — just a moment...
+        </span>
       </div>
     );
   }

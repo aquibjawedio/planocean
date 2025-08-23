@@ -97,12 +97,14 @@ export const updatedTaskStatusService = async ({ taskId, userId, projectId, stat
     throw new ApiError(400, "No changes in status ");
   }
 
-  if (task.assignedTo.toString() !== userId || !isProjectAdmin) {
+  if (task.assignedTo.toString() !== userId && !isProjectAdmin) {
     throw new ApiError(401, "Unauthorized! Task is not assigned to you.");
   }
 
   task.status = status;
   await task.save();
+  await task.populate("assignedTo", "fullname username avatarUrl isEmailVerified");
+  await task.populate("assignedBy", "fullname username avatarUrl isEmailVerified");
 
   await Notification.create({
     user: task.assignedTo,

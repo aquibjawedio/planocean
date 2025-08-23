@@ -56,7 +56,7 @@ const TableView = ({ tasks }) => {
   };
 
   return (
-    <div className="rounded-xl border p-4">
+    <div className="rounded-xl border p-4 bg-card">
       <Table>
         <TableHeader>
           <TableRow className="text-muted-foreground text-sm">
@@ -73,7 +73,7 @@ const TableView = ({ tasks }) => {
 
         <TableBody>
           {tasks.map((task) => (
-            <TableRow key={task._id} className="hover:bg-accent transition">
+            <TableRow key={task._id} className="hover:backdrop-brightness-75 transition bg-muted">
               <TableCell
                 className="font-medium text-foreground hover:underline cursor-pointer"
                 onClick={() => handleNavigate(task.project, task._id)}

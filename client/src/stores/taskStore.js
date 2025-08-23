@@ -62,6 +62,48 @@ const useTaskStore = create((set, get) => ({
       set({ isLoading: false });
     }
   },
+
+  updateTaskStatus: async (taskId, status, projectId) => {
+    try {
+      set({ isLoading: true, error: null });
+      const res = await axiosClient.patch(
+        `/projects/${projectId}/tasks/${taskId}`,
+        { status }
+      );
+      const updatedTask = res.data.data?.task;
+      console.log("Updated Task DRAGGED :", updatedTask);
+      set({
+        tasks: get().tasks.map((task) =>
+          task._id === taskId ? updatedTask : task
+        ),
+      });
+      return updatedTask;
+    } catch (error) {
+      set({
+        error: "Could not update task status",
+      });
+      throw error;
+    } finally {
+      set({ isLoading: false });
+    }
+  },
+
+  deleteTask: async (projectId, taskId) => {
+    try {
+      set({ isLoading: true, error: null });
+      await axiosClient.delete(`/projects/${projectId}/tasks/${taskId}`);
+      set({
+        tasks: get().tasks.filter((task) => task._id !== taskId),
+      });
+    } catch (error) {
+      set({
+        error: "Could not delete task",
+      });
+      throw error;
+    } finally {
+      set({ isLoading: false });
+    }
+  },
 }));
 
 export { useTaskStore };

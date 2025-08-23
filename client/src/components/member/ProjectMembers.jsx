@@ -8,6 +8,7 @@ import { useParams } from "react-router-dom";
 import VerificationBadge from "../shared/VerificationBadge";
 import { AddMemberDialog } from "./AddMemberDialog";
 import MemberOptionDropdown from "./MemberOptionsDropdown";
+import SpinLoader from "../shared/SpinLoader";
 
 const roleLabel = {
   project_admin: "Admin",
@@ -24,8 +25,11 @@ const ProjectMembers = () => {
 
   if (isLoading && members === null) {
     return (
-      <div className="flex items-center justify-center">
-        <span>Loading members...</span>
+      <div className="flex flex-col items-center justify-center mt-10 text-center">
+        <SpinLoader />
+        <span className="mt-2 text-foreground/70">
+          Loading project members — just a moment...
+        </span>
       </div>
     );
   }

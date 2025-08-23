@@ -6,11 +6,9 @@ import ProjectNotes from "@/components/note/ProjectNotes";
 import TableView from "@/components/project/TableView";
 import SpinLoader from "@/components/shared/SpinLoader";
 import CreateTaskDialog from "@/components/task/CreateTaskDialog";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Kanban, ListTodo, NotebookPen, Table, Users } from "lucide-react";
-import { useEffect } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useParams } from "react-router-dom";
 
 import { useProjectStore } from "@/stores/projectStore";
@@ -21,16 +19,27 @@ import { useAuthStore } from "@/stores/authStore";
 const ProjectPage = () => {
   const { projectId } = useParams();
 
-  const { project, isLoading, fetchProject } = useProjectStore();
-
-  const { tasks, fetchAllTasks } = useTaskStore();
+  const {
+    project,
+    isLoading: projectLoading,
+    fetchProject,
+  } = useProjectStore();
+  const {
+    tasks: storeTasks,
+    isLoading: tasksLoading,
+    fetchAllTasks,
+    updateTaskStatus,
+  } = useTaskStore();
 
   const { user } = useAuthStore();
 
+  const [localTasks, setLocalTasks] = useState([]);
+
   useEffect(() => {
-    fetchAllTasks(projectId);
+    if (!projectId) return;
     fetchProject(projectId);
-  }, [fetchAllTasks, projectId, fetchProject]);
+    fetchAllTasks(projectId);
+  }, [projectId, fetchProject, fetchAllTasks]);
 
   useEffect(() => {
     if (project && projectId && user) {
@@ -38,16 +47,85 @@ const ProjectPage = () => {
     }
   }, [project, projectId, user]);
 
-  if (isLoading && tasks === null) {
+  useEffect(() => {
+    if (Array.isArray(storeTasks)) {
+      setLocalTasks(storeTasks);
+    }
+  }, [storeTasks]);
+
+  const persistStatus = useCallback(
+    async (taskId, newStatus) => {
+      try {
+        await updateTaskStatus(taskId, newStatus, projectId);
+      } catch (err) {
+        fetchAllTasks(projectId);
+        console.error("Failed to update task status:", err);
+      }
+    },
+    [updateTaskStatus, fetchAllTasks, projectId]
+  );
+
+  const handleTaskMove = useCallback(
+    (taskId, { source, destination }) => {
+      if (!taskId || !destination) return;
+
+      setLocalTasks((prev) => {
+        const buckets = { todo: [], in_progress: [], done: [] };
+        prev.forEach((t) => {
+          if (buckets[t.status]) buckets[t.status].push(t);
+        });
+
+        const from = source?.status;
+        const to = destination?.status;
+        const fromIdx = source?.index ?? -1;
+        const toIdx = destination?.index ?? -1;
+
+        if (!from || !to || fromIdx < 0 || toIdx < 0) return prev;
+
+        const fromArr = [...(buckets[from] || [])];
+        const toArr = from === to ? fromArr : [...(buckets[to] || [])];
+
+        const moved = fromArr[fromIdx];
+        if (!moved) return prev;
+
+        fromArr.splice(fromIdx, 1);
+
+        const movedUpdated = { ...moved, status: to };
+        toArr.splice(toIdx, 0, movedUpdated);
+
+        const nextBuckets = {
+          ...buckets,
+          [from]: fromArr,
+          [to]: toArr,
+        };
+
+        const next = [
+          ...nextBuckets.todo,
+          ...nextBuckets.in_progress,
+          ...nextBuckets.done,
+        ];
+
+        return next;
+      });
+
+      persistStatus(taskId, destination.status);
+    },
+    [persistStatus]
+  );
+
+  const loading = projectLoading || tasksLoading;
+  const noTasksYet = !loading && (!localTasks || localTasks.length === 0);
+
+  if (loading && storeTasks === null) {
     return (
-      <div className="flex items-center justify-center">
+      <div className="flex flex-col items-center justify-center mt-10 text-center">
         <SpinLoader />
-        <span>Loading project...</span>
+        <span className="mt-2 text-foreground/70">
+          Loading your tasks — just a moment...
+        </span>
       </div>
     );
   }
-
-  console.log("Tasks in ProjectPage:", tasks);
 
   return (
     <div className="min-h-screen w-full flex justify-center">
@@ -57,7 +135,7 @@ const ProjectPage = () => {
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
           <Tabs defaultValue="kanban" className="w-full">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-              <TabsList className="bg-background border rounded-md  shadow-sm flex gap-1">
+              <TabsList className="bg-background border rounded-md shadow-sm flex gap-1">
                 <TabsTrigger
                   value="kanban"
                   className="data-[state=active]:bg-muted data-[state=active]:text-foreground rounded-md px-4 py-2 text-sm font-medium flex items-center gap-2 cursor-pointer"
@@ -82,7 +160,7 @@ const ProjectPage = () => {
               </TabsList>
 
               <div className="flex gap-2">
-                <TabsList className="bg-background border rounded-md  shadow-sm flex gap-1">
+                <TabsList className="bg-background border rounded-md shadow-sm flex gap-1">
                   <TabsTrigger
                     value="notes"
                     className="data-[state=active]:bg-muted data-[state=active]:text-foreground rounded-md px-4 py-2 text-sm font-medium flex items-center gap-2 cursor-pointer"
@@ -105,18 +183,21 @@ const ProjectPage = () => {
             </div>
 
             <div className="mt-4">
-              {tasks && (
+              {!noTasksYet && (
                 <>
                   <TabsContent value="kanban">
-                    <KanbanView tasks={tasks} />
+                    <KanbanView
+                      tasks={localTasks}
+                      onTaskMove={handleTaskMove}
+                    />
                   </TabsContent>
 
                   <TabsContent value="list">
-                    <ListView tasks={tasks} />
+                    <ListView tasks={localTasks} />
                   </TabsContent>
 
                   <TabsContent value="table">
-                    <TableView tasks={tasks} />
+                    <TableView tasks={localTasks} />
                   </TabsContent>
                 </>
               )}
