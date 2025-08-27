@@ -43,7 +43,7 @@ const ProjectPage = () => {
 
   useEffect(() => {
     if (project && projectId && user) {
-      socket.emit("joinProjectRoom", projectId);
+      socket.emit("joinProject", projectId);
     }
   }, [project, projectId, user]);
 

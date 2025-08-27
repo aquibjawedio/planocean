@@ -12,6 +12,7 @@ import { connectDB } from "./config/connectDB.js";
 import "./config/passport.js";
 import { errorHandler } from "./middlewares/error.middleware.js";
 import { env } from "./config/env.js";
+import { initializeSocketIO } from "./utils/socket.js";
 
 // Importing all routes here
 import { healthCheckRouter } from "./routes/healthcheck.route.js";
@@ -35,21 +36,6 @@ const io = new Server(server, {
   },
 });
 
-io.on("connection", (socket) => {
-  socket.on("joinRoom", (userId) => {
-    socket.join(userId);
-    console.log(
-      `✅ User ${userId} joined room | 👉 Socket ID: ${socket.id} | 👉 Rooms for socket: ${JSON.stringify([...socket.rooms])}`
-    );
-  });
-
-  socket.on("joinProjectRoom", (projectId) => {
-    socket.join(projectId);
-    console.log(
-      `✅ Project ${projectId} joined room | 👉 Socket ID: ${socket.id} | 👉 Rooms for socket: ${JSON.stringify([...socket.rooms])}`
-    );
-  });
-});
 app.set("io", io);
 
 // Cors Configuration
@@ -102,7 +88,10 @@ app.use("/api/v1/projects", taskRouter);
 app.use("/api/v1/projects", subtaskRouter);
 app.use("/api/v1/notifications", notificationRouter);
 
-// Custom Middlewares
+// SOCKET CONNECTION
+initializeSocketIO(io);
+
+// GLOBAL ERROR HANDLER
 app.use(errorHandler);
 
 export { server };

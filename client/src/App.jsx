@@ -4,11 +4,15 @@ import { useAuthStore } from "./stores/authStore";
 import { useThemeStore } from "./stores/themeStore";
 import socket from "./api/socket";
 import { toast } from "sonner";
+import { useNoteStore } from "./stores/noteStore";
+import { useMemberStore } from "./stores/memberStore";
 
 const App = () => {
   const { user, fetchUserProfile } = useAuthStore();
 
   const { theme } = useThemeStore();
+  const { fetchAllNotes } = useNoteStore();
+  const { fetchAllMembers } = useMemberStore();
 
   useEffect(() => {
     const root = window.document.documentElement;
@@ -28,39 +32,46 @@ const App = () => {
   }, [user, fetchUserProfile]);
 
   useEffect(() => {
-    socket.on("connect", () => {
-      console.log("Socket connected successfully");
-      if (user) {
-        socket.emit("joinRoom", user._id.toString());
+    const userId = user?._id?.toString();
+
+    const handleConnect = () => {
+      if (userId) {
+        socket.emit("joinRoom", userId);
       }
-    });
+    };
 
-    socket.on("member", (data) => {
+    const handleMember = async (data) => {
       toast(data.message, {
-        description: "Click to view details",
         action: {
-          label: "View",
-          onClick: () => console.log("View details"),
+          label: "OK",
         },
       });
-    });
+      if (data) {
+        await fetchAllMembers(data.projectId);
+      }
+    };
 
-    socket.on("note", (data) => {
+    const handleNote = async (data) => {
       toast(data.message, {
-        description: "Click to view details",
         action: {
-          label: "View",
-          onClick: () => console.log("View note details"),
+          label: "OK",
         },
       });
-    });
+      if (data) {
+        await fetchAllNotes(data.projectId);
+      }
+    };
+
+    socket.on("connect", handleConnect);
+    socket.on("member", handleMember);
+    socket.on("note", handleNote);
 
     return () => {
-      socket.off("connect");
-      socket.off("disconnect");
-      socket.off("message");
+      socket.off("connect", handleConnect);
+      socket.off("member", handleMember);
+      socket.off("note", handleNote);
     };
-  }, [user]);
+  }, [fetchAllMembers, fetchAllNotes, user?._id]);
 
   return <AppRouter />;
 };
